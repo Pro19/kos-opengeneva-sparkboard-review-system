@@ -20,7 +20,7 @@ LLM_CONFIG = {
     
     "ollama": {
         "base_url": "http://localhost:11434",  # Default Ollama API URL
-        "model": "llama3",  # Choose your available model (llama3, mistral, etc.)
+        "model": "deepseek-r1:8b",  # Choose your available model (llama3, mistral, etc.)
         "max_tokens": 1000
     }
 }

@@ -66,7 +66,7 @@ class Project:
             List of dictionaries containing review data
         """
         reviews = []
-        review_files = glob.glob(os.path.join(self.project_dir, "human-review*.md"))
+        review_files = glob.glob(os.path.join(self.project_dir, "review*.md"))
         
         for review_file in review_files:
             try:

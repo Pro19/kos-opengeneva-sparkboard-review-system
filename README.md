@@ -12,8 +12,8 @@ This repository contains an implementation of an ontology-driven AI system for a
 
 2. Create and activate a virtual environment (recommended):
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows, use: venv\Scripts\activate
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows, use: venv\Scripts\activate
    ```
 
 3. Install required dependencies:
@@ -67,13 +67,13 @@ A command-line utility is included to manage and test different LLM providers:
 
 ```bash
 # Show current configuration
-python hackathon_review/llm_cli.py config
+python llm_cli.py config
 
 # Set default provider
-python hackathon_review/llm_cli.py set ollama
+python llm_cli.py set ollama
 
 # Test a provider
-python hackathon_review/llm_cli.py test ollama
+python llm_cli.py test ollama
 ```
 
 ## Running the System
@@ -96,7 +96,7 @@ This script will:
 For regular usage with your own projects:
 
 ```bash
-python hackathon_review/main.py
+python main.py
 ```
 
 Additional options:
@@ -106,7 +106,7 @@ Additional options:
 
 Example:
 ```bash
-python hackathon_review/main.py --project ai-health-assistant --output results
+python main.py --project ai-health-assistant --output results
 ```
 
 ## Advanced Usage: LLM Factory
