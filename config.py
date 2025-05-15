@@ -4,14 +4,23 @@ Configuration settings for the hackathon review system.
 
 # LLM API configuration
 LLM_CONFIG = {
+    "provider": "ollama",  # Choose between "claude", "chatgpt", or "ollama"
+    
     "claude": {
         "api_key": "YOUR_ANTHROPIC_API_KEY",
         "model": "claude-3-opus-20240229",
         "max_tokens": 1000
     },
+    
     "chatgpt": {
         "api_key": "YOUR_OPENAI_API_KEY",
         "model": "gpt-4-turbo",
+        "max_tokens": 1000
+    },
+    
+    "ollama": {
+        "base_url": "http://localhost:11434",  # Default Ollama API URL
+        "model": "llama3",  # Choose your available model (llama3, mistral, etc.)
         "max_tokens": 1000
     }
 }

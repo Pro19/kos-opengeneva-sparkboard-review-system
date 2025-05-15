@@ -1,5 +1,5 @@
 """
-Interface for interacting with language models (Claude, ChatGPT)
+Interface for interacting with language models (Claude, ChatGPT, Ollama)
 """
 
 import json
@@ -7,23 +7,30 @@ import requests
 from typing import Dict, List, Any, Optional
 from config import LLM_CONFIG
 
-def generate_llm_response(llm_type: str, prompt: str) -> str:
+def generate_llm_response(prompt: str, provider: str = None) -> str:
     """
     Generate a response using a language model.
     
     Args:
-        llm_type: Type of LLM to use ('claude' or 'chatgpt')
         prompt: Text prompt to send to the LLM
+        provider: Optional override for the LLM provider
         
     Returns:
         Response text from the LLM
     """
-    if llm_type.lower() == "claude":
+    # Get the provider from config if not specified
+    if provider is None:
+        provider = LLM_CONFIG.get("provider", "ollama")
+    
+    # Call the appropriate API
+    if provider.lower() == "claude":
         return _call_claude_api(prompt)
-    elif llm_type.lower() == "chatgpt":
+    elif provider.lower() == "chatgpt":
         return _call_chatgpt_api(prompt)
+    elif provider.lower() == "ollama":
+        return _call_ollama_api(prompt)
     else:
-        raise ValueError(f"Unsupported LLM type: {llm_type}")
+        raise ValueError(f"Unsupported LLM provider: {provider}")
 
 def _call_claude_api(prompt: str) -> str:
     """
@@ -35,23 +42,20 @@ def _call_claude_api(prompt: str) -> str:
     Returns:
         Response text from Claude
     """
-    # In a real implementation, this would use the Anthropic API
-    # For now, we'll simulate a response
-    
     try:
         config = LLM_CONFIG.get("claude", {})
         api_key = config.get("api_key")
         model = config.get("model", "claude-3-opus-20240229")
         max_tokens = config.get("max_tokens", 1000)
         
-        # Simulation for demonstration
-        print(f"[Simulated] Calling Claude API with prompt: {prompt[:50]}...")
+        # Print status for logging
+        print(f"Calling Claude API with model {model}...")
         
-        # In a real implementation:
-        """
+        # Make API call
         headers = {
             "x-api-key": api_key,
-            "content-type": "application/json"
+            "content-type": "application/json",
+            "anthropic-version": "2023-06-01"
         }
         
         payload = {
@@ -70,15 +74,13 @@ def _call_claude_api(prompt: str) -> str:
             return response.json()["content"][0]["text"]
         else:
             print(f"Error calling Claude API: {response.status_code} - {response.text}")
-            return ""
-        """
+            # Fall back to simulation for demo/testing
+            return f"Simulated Claude response. Error occurred: {response.status_code}"
         
-        # For demo purposes, return a simulated response
-        return "Simulated Claude response. In a real implementation, this would be a response from the Claude API."
-    
     except Exception as e:
         print(f"Error calling Claude API: {str(e)}")
-        return ""
+        # Fall back to simulation for demo/testing
+        return "Simulated Claude response due to API error."
 
 def _call_chatgpt_api(prompt: str) -> str:
     """
@@ -90,20 +92,16 @@ def _call_chatgpt_api(prompt: str) -> str:
     Returns:
         Response text from ChatGPT
     """
-    # In a real implementation, this would use the OpenAI API
-    # For now, we'll simulate a response
-    
     try:
         config = LLM_CONFIG.get("chatgpt", {})
         api_key = config.get("api_key")
         model = config.get("model", "gpt-4-turbo")
         max_tokens = config.get("max_tokens", 1000)
         
-        # Simulation for demonstration
-        print(f"[Simulated] Calling ChatGPT API with prompt: {prompt[:50]}...")
+        # Print status for logging
+        print(f"Calling ChatGPT API with model {model}...")
         
-        # In a real implementation:
-        """
+        # Make API call
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
@@ -125,15 +123,59 @@ def _call_chatgpt_api(prompt: str) -> str:
             return response.json()["choices"][0]["message"]["content"]
         else:
             print(f"Error calling ChatGPT API: {response.status_code} - {response.text}")
-            return ""
-        """
+            # Fall back to simulation for demo/testing
+            return f"Simulated ChatGPT response. Error occurred: {response.status_code}"
         
-        # For demo purposes, return a simulated response
-        return "Simulated ChatGPT response. In a real implementation, this would be a response from the ChatGPT API."
-    
     except Exception as e:
         print(f"Error calling ChatGPT API: {str(e)}")
-        return ""
+        # Fall back to simulation for demo/testing
+        return "Simulated ChatGPT response due to API error."
+
+def _call_ollama_api(prompt: str) -> str:
+    """
+    Call the Ollama API to generate a response.
+    
+    Args:
+        prompt: Text prompt to send to Ollama
+        
+    Returns:
+        Response text from Ollama
+    """
+    try:
+        config = LLM_CONFIG.get("ollama", {})
+        base_url = config.get("base_url", "http://localhost:11434")
+        model = config.get("model", "llama3")
+        max_tokens = config.get("max_tokens", 1000)
+        
+        # Print status for logging
+        print(f"Calling Ollama API with model {model}...")
+        
+        # Make API call
+        payload = {
+            "model": model,
+            "prompt": prompt,
+            "stream": False,
+            "options": {
+                "num_predict": max_tokens
+            }
+        }
+        
+        response = requests.post(
+            f"{base_url}/api/generate",
+            json=payload
+        )
+        
+        if response.status_code == 200:
+            return response.json().get("response", "")
+        else:
+            print(f"Error calling Ollama API: {response.status_code} - {response.text}")
+            # Fall back to simulation for demo/testing
+            return f"Simulated Ollama response. Error occurred: {response.status_code}"
+        
+    except Exception as e:
+        print(f"Error calling Ollama API: {str(e)}")
+        # Fall back to simulation for demo/testing
+        return "Simulated Ollama response due to API error."
 
 def generate_artificial_review(project_description: str, domain: str, ontology: Any) -> Dict[str, Any]:
     """
@@ -179,7 +221,7 @@ def generate_artificial_review(project_description: str, domain: str, ontology: 
         prompt += "\n\nPlease focus on these dimensions that are particularly relevant to your domain:\n"
         prompt += "\n".join(dimension_prompts)
     
-    response = generate_llm_response("claude", prompt)
+    response = generate_llm_response(prompt)
     
     # Extract a confidence score (default to 90 for artificial reviews)
     confidence_score = 90
@@ -224,7 +266,7 @@ def analyze_review_sentiment(review_text: str) -> Dict[str, float]:
     Format your response as a JSON object with these keys and numerical values.
     """
     
-    response = generate_llm_response("claude", prompt)
+    response = generate_llm_response(prompt)
     
     try:
         # Try to parse the response as JSON
@@ -232,6 +274,7 @@ def analyze_review_sentiment(review_text: str) -> Dict[str, float]:
         return sentiment_data
     except json.JSONDecodeError:
         # If parsing fails, return default values
+        print("Failed to parse sentiment analysis response as JSON. Using default values.")
         return {
             "technical_feasibility": 3.0,
             "innovation": 3.0,
@@ -274,7 +317,7 @@ def classify_reviewer_domain(reviewer_name: str, review_text: str, ontology: Any
     Return just one domain name that best fits this reviewer's perspective.
     """
     
-    response = generate_llm_response("claude", prompt).strip()
+    response = generate_llm_response(prompt).strip()
     
     # Extract domain name (remove any explanation)
     for domain in domains:

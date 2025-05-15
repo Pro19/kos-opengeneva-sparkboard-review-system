@@ -54,13 +54,13 @@ Current Implementation Idea:
 projects/
     |- project-1/
         |- description.md
-        |- human-review1.md
-        |- human-review2.md
+        |- review1.md
+        |- review2.md
     |- project-2/
         |- description.md
-        |- human-review3.md
-        |- human-review4.md
-        |- human-review5.md
+        |- review3.md
+        |- review4.md
+        |- review5.md
 ```
 
 description.md

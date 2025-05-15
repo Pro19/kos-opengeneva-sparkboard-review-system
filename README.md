@@ -1,97 +1,150 @@
 # Ontology-Driven AI for Multi-Perspective Peer Review
 
-This implementation provides a complete system for analyzing hackathon project reviews using an ontology-driven approach that leverages AI to generate multi-perspective feedback.
+This repository contains an implementation of an ontology-driven AI system for analyzing hackathon project reviews from multiple perspectives, with flexible LLM provider support.
 
-## Setup Instructions
+## Installation
 
-1. Install required dependencies:
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/your-username/hackathon-review-system.git
+   cd hackathon-review-system
    ```
+
+2. Create and activate a virtual environment (recommended):
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows, use: venv\Scripts\activate
+   ```
+
+3. Install required dependencies:
+   ```bash
    pip install scikit-learn numpy requests
    ```
 
-2. Set up the project directory structure as specified:
-   ```
-   projects/
-       |- project-1/
-           |- description.md
-           |- human-review1.md
-           |- human-review2.md
-       |- project-2/
-           |- description.md
-           |- human-review3.md
-           |- human-review4.md
-           |- human-review5.md
-   ```
+4. (Optional) Install Ollama for local LLM inference:
+   - Visit [Ollama's website](https://ollama.ai/) to download and install
+   - Pull a model: `ollama pull llama3` or `ollama pull mistral`
 
-3. Configure the system by updating the API keys in `config.py` if you want to use real LLM APIs:
-   ```python
-   # Update these with your actual API keys
-   LLM_CONFIG = {
-       "claude": {
-           "api_key": "YOUR_ANTHROPIC_API_KEY",
-           "model": "claude-3-opus-20240229"
-       },
-       "chatgpt": {
-           "api_key": "YOUR_OPENAI_API_KEY",
-           "model": "gpt-4-turbo"
-       }
-   }
-   ```
+## LLM Provider Support
+
+The system now supports multiple LLM providers:
+
+1. **Ollama** (default): Run open-source LLMs locally
+2. **Claude**: Use Anthropic's Claude models via API
+3. **ChatGPT**: Use OpenAI's GPT models via API
+
+### Configuring LLM Providers
+
+You can configure which LLM provider to use in `config.py`:
+
+```python
+LLM_CONFIG = {
+    "provider": "ollama",  # Choose between "claude", "chatgpt", or "ollama"
+    
+    "ollama": {
+        "base_url": "http://localhost:11434",  # Default Ollama API URL
+        "model": "llama3",  # Choose your available model
+        "max_tokens": 1000
+    },
+    
+    "claude": {
+        "api_key": "YOUR_ANTHROPIC_API_KEY",
+        "model": "claude-3-opus-20240229",
+        "max_tokens": 1000
+    },
+    
+    "chatgpt": {
+        "api_key": "YOUR_OPENAI_API_KEY",
+        "model": "gpt-4-turbo", 
+        "max_tokens": 1000
+    }
+}
+```
+
+### LLM Provider CLI Utility
+
+A command-line utility is included to manage and test different LLM providers:
+
+```bash
+# Show current configuration
+python hackathon_review/llm_cli.py config
+
+# Set default provider
+python hackathon_review/llm_cli.py set ollama
+
+# Test a provider
+python hackathon_review/llm_cli.py test ollama
+```
 
 ## Running the System
 
-1. Run the main script to process all projects:
-   ```
-   python main.py
-   ```
+### Testing with Sample Projects
 
-2. Or process a specific project:
-   ```
-   python main.py --project project-1
-   ```
+To run the system with the included test projects:
 
-3. Save output to a specific directory:
-   ```
-   python main.py --output results
-   ```
+```bash
+python run_test.py
+```
 
-4. Create a new ontology instead of using the existing one:
-   ```
-   python main.py --new-ontology
-   ```
+This script will:
+1. Set up the test environment with sample projects
+2. Update the configuration to use the test projects directory
+3. Run the main program and generate feedback reports in the `output` directory
+
+### Regular Usage
+
+For regular usage with your own projects:
+
+```bash
+python hackathon_review/main.py
+```
+
+Additional options:
+- `--project PROJECT_ID`: Process a specific project
+- `--output OUTPUT_DIR`: Specify output directory
+- `--new-ontology`: Create a new ontology instead of loading existing one
+
+Example:
+```bash
+python hackathon_review/main.py --project ai-health-assistant --output results
+```
+
+## Advanced Usage: LLM Factory
+
+For more advanced control over LLM interactions, you can use the `LLMFactory` class:
+
+```python
+from llm_factory import LLMFactory
+
+# Create an LLM factory
+llm = LLMFactory()
+
+# Get a response using the default provider
+response = llm.get_response("What is ontology in computer science?")
+
+# Get a response from a specific provider
+response = llm.get_response(
+    "Explain machine learning",
+    provider="ollama",
+    model="llama3",
+    max_tokens=500
+)
+
+# Switch the default provider
+llm.set_default_provider("claude")
+```
 
 ## System Features
 
-1. **Ontology Generation:** Creates and maintains an ontology of domains, project types, impact dimensions, and expertise levels.
-
-2. **Reviewer Classification:** Classifies reviewers by domain expertise and filters reviews based on relevance.
-
-3. **Multi-Domain Analysis:** Groups reviews by domain to provide perspective-specific insights.
-
-4. **Artificial Review Generation:** Creates additional reviews for missing critical domains.
-
-5. **Feedback Aggregation:** Combines reviews across domains with appropriate weighting based on expertise.
-
-6. **Final Report Generation:** Produces comprehensive feedback reports that highlight multi-perspective insights.
-
-## Example Outputs
-
-The system generates two main output files for each project:
-
-1. `{project_id}_feedback.md` - A comprehensive feedback report with scores and insights.
-2. `{project_id}_visualization.json` - Data for visualizing the feedback scores.
-
-## Extending the System
-
-To extend the system with additional features:
-
-1. **Add New Domains:** Update the `_generate_domains` method in `ontology.py`
-2. **Add New Evaluation Dimensions:** Update the `_generate_impact_dimensions` method in `ontology.py`
-3. **Customize Visualizations:** Modify the visualization methods in `feedback.py`
-4. **Integrate with External APIs:** Update the integration methods in `llm_interface.py`
+- **Flexible LLM backend**: Use local models via Ollama or cloud APIs
+- **Ontology-driven analysis**: Structured representation of domains, expertise, and feedback dimensions
+- **Reviewer classification**: Identification of reviewer domain expertise and relevance
+- **Multi-perspective feedback**: Analysis of projects from diverse stakeholder viewpoints
+- **Artificial review generation**: AI-generated reviews for missing domain perspectives
+- **Comprehensive reports**: Detailed feedback with multi-dimensional scoring
 
 ## Notes
 
-- The current implementation simulates LLM responses for demo purposes. Connect to actual APIs by uncommenting and updating the relevant code in `llm_interface.py`
+- When using Ollama, ensure the Ollama service is running locally
+- API keys for Claude and ChatGPT should be stored securely (not hardcoded in the config file)
 - The system assumes all reviews follow the specified format
-- For production use, add robust error handling and logging
