@@ -6,6 +6,9 @@ from typing import Dict, List, Any, Optional
 from collections import defaultdict
 from config import CORE_DOMAINS
 from llm_interface import analyze_review_sentiment, generate_artificial_review
+import time
+from logging_utils import logger
+from config import LLM_CONFIG, LLM_PROMPTS
 
 class ReviewAnalyzer:
     """Class for analyzing and processing project reviews."""
@@ -170,15 +173,8 @@ class ReviewAnalyzer:
         return feedback_scores
     
     def _generate_final_review(self, project) -> str:
-        """
-        Generate a final textual review based on all accepted reviews.
+        """Generate a final textual review based on all accepted reviews."""
         
-        Args:
-            project: Project object
-            
-        Returns:
-            Final review text
-        """
         # Get project name and description
         project_name = project.project_data.get("name", "")
         project_description = project.project_data.get("description", "")
@@ -193,80 +189,57 @@ class ReviewAnalyzer:
                 domain = review.get("domain", "unknown")
                 reviews_by_domain[domain].append(review)
         
-        # Generate prompt for final review
-        prompt = f"""
-        You are an expert reviewer synthesizing multiple perspectives on a hackathon project.
-        
-        Project: {project_name}
-        Description: {project_description}
-        
-        Based on reviewer feedback, the project has received the following scores (on a scale of 1-5):
-        """
-        
-        # Add scores to prompt
+        # Format dimension scores for prompt
+        dimension_scores_text = ""
         for dimension, score in feedback_scores.items():
-            dimension_name = dimension.replace("_", " ").title()
-            prompt += f"- {dimension_name}: {score}\n"
+            if dimension != "overall_sentiment":
+                dimension_name = dimension.replace("_", " ").title()
+                dimension_scores_text += f"- {dimension_name}: {score}\n"
         
-        prompt += "\nDomain-specific insights:\n"
-        
-        # Add domain-specific insights
+        # Format domain insights for prompt
+        domain_insights_text = ""
         for domain, reviews in reviews_by_domain.items():
             domain_name = domain.capitalize()
-            prompt += f"\n{domain_name} perspective:\n"
+            domain_insights_text += f"\n{domain_name} perspective:\n"
             
             for review in reviews:
                 review_type = "AI-generated" if review.get("is_artificial", False) else "Human"
                 expertise = review.get("expertise_level", "").capitalize()
-                prompt += f"- {review_type} {expertise} Reviewer: {review.get('text_review', '')[:100]}...\n"
+                # Extract a snippet of the review text
+                review_snippet = review.get('text_review', '')[:100].replace('\n', ' ').strip()
+                domain_insights_text += f"- {review_type} {expertise} Reviewer: {review_snippet}...\n"
         
-        prompt += """
-        Please synthesize these perspectives into a comprehensive final review of the project.
-        The review should:
-        1. Highlight the project's strengths and weaknesses
-        2. Discuss different perspectives from various domains
-        3. Provide constructive suggestions for improvement
-        4. Summarize the overall assessment
+        # Get prompt template from config
+        prompt_template = LLM_PROMPTS.get("generate_final_review")
         
-        Keep the review balanced, constructive, and actionable. Length should be about 400-500 words.
-        """
+        # Format the prompt
+        prompt = prompt_template.format(
+            project_name=project_name,
+            project_description=project_description,
+            dimension_scores=dimension_scores_text,
+            domain_insights=domain_insights_text
+        )
         
-        # For demonstration, we'll return a simulated review
-        # In a real implementation, this would call an LLM
-        final_review = f"""
-        # Multi-perspective Review Summary for {project_name}
+        logger.debug(f"Generating final review with prompt: {prompt[:200]}...")
         
-        ## Overall Assessment
-        Based on a comprehensive analysis of reviews from multiple domains, this project demonstrates 
-        significant potential with some areas for improvement. The project scored particularly well 
-        in [highest dimension] and [second highest dimension], while [lowest dimension] was identified 
-        as an area needing attention.
+        # Call LLM to generate the review
+        from llm_interface import generate_llm_response
         
-        ## Technical Perspective
-        Reviewers with technical expertise highlighted the project's [technical strengths] but raised 
-        concerns about [technical challenges]. Suggestions for improvement include [technical suggestions].
+        max_retries = LLM_CONFIG.get("max_retries", 3)
+        retry_count = 0
         
-        ## Business Perspective
-        From a business standpoint, the project shows [business strengths] but may face challenges in 
-        [business challenges]. Recommendations include [business recommendations].
-        
-        ## User Experience Perspective
-        UX experts noted [UX strengths] while pointing out potential issues with [UX issues]. 
-        They recommend [UX recommendations] to enhance user adoption and satisfaction.
-        
-        ## Healthcare/Domain Perspective
-        Domain experts appreciated the project's [domain strengths] but cautioned about [domain concerns]. 
-        Their suggestions include [domain-specific recommendations].
-        
-        ## Recommendations for Improvement
-        1. [Key recommendation 1]
-        2. [Key recommendation 2]
-        3. [Key recommendation 3]
-        
-        ## Conclusion
-        This project shows promise in addressing [problem statement] and with the suggested improvements, 
-        could make a significant impact in [target domain]. The team should prioritize addressing 
-        [critical area] while continuing to build on strengths in [strong area].
-        """
-        
-        return final_review
+        while retry_count < max_retries:
+            try:
+                final_review = generate_llm_response(prompt)
+                return final_review
+            except Exception as e:
+                retry_count += 1
+                retry_delay = LLM_CONFIG.get("retry_delay", 2)
+                logger.warning(f"Error generating final review (attempt {retry_count}/{max_retries}): {str(e)}")
+                
+                if retry_count >= max_retries:
+                    logger.error("Failed to generate final review after maximum retries.")
+                    raise Exception("Failed to generate final review after maximum retries")
+                
+                logger.info(f"Retrying in {retry_delay} seconds...")
+                time.sleep(retry_delay)

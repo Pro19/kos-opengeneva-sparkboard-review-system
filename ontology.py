@@ -7,6 +7,7 @@ import json
 from typing import Dict, List, Any, Optional
 from config import PATHS, CORE_DOMAINS
 from llm_interface import generate_llm_response
+from logging_utils import logger
 
 class Ontology:
     """
@@ -33,7 +34,7 @@ class Ontology:
             with open(self.ontology_path, 'r') as file:
                 self.ontology = json.load(file)
         except (json.JSONDecodeError, FileNotFoundError):
-            print(f"Error loading ontology from {self.ontology_path}, creating new one.")
+            logger.error(f"Error loading ontology from {self.ontology_path}, creating new one.")
             self.create_initial_ontology()
     
     def save_ontology(self) -> None:
@@ -306,76 +307,61 @@ class Ontology:
         Args:
             context: Additional context to inform the ontology update
         """
-        prompt = f"""
-        You are an expert in healthcare innovation and hackathons. You need to help update an ontology 
-        for a multi-perspective peer review system. The current ontology includes:
         
-        1. Domains (e.g., technical, clinical, administrative)
-        2. Project types (e.g., software, hardware, data)
-        3. Impact dimensions (e.g., technical feasibility, innovation, impact)
-        4. Expertise levels (e.g., beginner, skilled, expert)
+        # Skip this functionality as requested
+        logger.info("Skipping ontology update for now")
+        return
         
-        Based on the following context, suggest improvements or additions to the ontology:
-        
-        {context}
-        
-        Provide your response as a JSON object with the following structure:
-        {{
-            "domains_to_add": [{{
-                "name": "domain_name",
-                "description": "domain_description",
-                "keywords": ["keyword1", "keyword2"]
-            }}],
-            "project_types_to_add": [{{
-                "name": "project_type_name",
-                "description": "project_type_description",
-                "keywords": ["keyword1", "keyword2"]
-            }}],
-            "impact_dimensions_to_add": [{{
-                "name": "dimension_name",
-                "description": "dimension_description",
-                "scale": {{
-                    "1": "description_of_1",
-                    "5": "description_of_5"
-                }}
-            }}]
-        }}
-        """
-        
-        response = generate_llm_response("claude", prompt)
-        try:
-            updates = json.loads(response)
-            
-            # Apply updates to the ontology
-            for domain in updates.get("domains_to_add", []):
-                if domain.get("name") and domain.get("name").lower() not in self.ontology["domains"]:
-                    self.ontology["domains"][domain.get("name").lower()] = {
-                        "name": domain.get("name"),
-                        "description": domain.get("description", ""),
-                        "keywords": domain.get("keywords", []),
-                        "subdomains": {}
-                    }
-            
-            for project_type in updates.get("project_types_to_add", []):
-                if project_type.get("name") and project_type.get("name").lower() not in self.ontology["project_types"]:
-                    self.ontology["project_types"][project_type.get("name").lower()] = {
-                        "name": project_type.get("name"),
-                        "description": project_type.get("description", ""),
-                        "keywords": project_type.get("keywords", [])
-                    }
-            
-            for impact_dimension in updates.get("impact_dimensions_to_add", []):
-                if impact_dimension.get("name") and impact_dimension.get("name").lower() not in self.ontology["impact_dimensions"]:
-                    self.ontology["impact_dimensions"][impact_dimension.get("name").lower().replace(" ", "_")] = {
-                        "name": impact_dimension.get("name"),
-                        "description": impact_dimension.get("description", ""),
-                        "scale": impact_dimension.get("scale", {})
-                    }
-            
-            self.save_ontology()
-            print("Ontology updated successfully with LLM suggestions.")
-        except json.JSONDecodeError:
-            print("Failed to parse LLM response as JSON.")
+        # The original implementation is below for reference
+        # prompt = f"""
+        #     You are an expert in healthcare innovation and hackathons. You need to help update an ontology 
+        #     for a multi-perspective peer review system. The current ontology includes:
+        #     
+        #     1. Domains (e.g., technical, clinical, administrative)
+        #     2. Project types (e.g., software, hardware, data)
+        #     3. Impact dimensions (e.g., technical feasibility, innovation, impact)
+        #     4. Expertise levels (e.g., beginner, skilled, expert)
+        #     
+        #     Based on the following context, suggest improvements or additions to the ontology:
+        #     
+        #     {context}
+        #     
+        #     Provide your response as a JSON object with the following structure:
+        #     {{
+        #         "domains_to_add": [{{
+        #             "name": "domain_name",
+        #             "description": "domain_description",
+        #             "keywords": ["keyword1", "keyword2"]
+        #         }}],
+        #         "project_types_to_add": [{{
+        #             "name": "project_type_name",
+        #             "description": "project_type_description",
+        #             "keywords": ["keyword1", "keyword2"]
+        #         }}],
+        #         "impact_dimensions_to_add": [{{
+        #             "name": "dimension_name",
+        #             "description": "dimension_description",
+        #             "scale": {{
+        #                 "1": "description_of_1",
+        #                 "5": "description_of_5"
+        #             }}
+        #         }}]
+        #     }}
+        #     """
+        #
+        # from llm_interface import generate_llm_response
+        # response = generate_llm_response(prompt)  # Fix the order: prompt first, provider optional
+        # 
+        # try:
+        #     updates = json.loads(response)
+        #     
+        #     # Apply updates to the ontology
+        #     # ... (rest of the implementation)
+        #     
+        #     self.save_ontology()
+        #     logger.info("Ontology updated successfully with LLM suggestions.")
+        # except json.JSONDecodeError:
+        #     logger.error("Failed to parse LLM response as JSON.")
     
     def get_domains(self) -> List[str]:
         """Get list of all domains in the ontology."""

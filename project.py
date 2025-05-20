@@ -59,12 +59,9 @@ class Project:
         }
     
     def _load_reviews(self) -> List[Dict[str, Any]]:
-        """
-        Load all review files for the project.
+        """Load all review files for the project."""
+        from logging_utils import logger
         
-        Returns:
-            List of dictionaries containing review data
-        """
         reviews = []
         review_files = glob.glob(os.path.join(self.project_dir, "review*.md"))
         
@@ -81,9 +78,23 @@ class Project:
                 # Extract review text
                 review_text = review_content.get("Text review of the project (max 400 words)", "")
                 
-                # Extract confidence score
-                confidence_score_text = review_content.get("Confidence score (0-100) _How much confidence do you have in your own review?_", "0")
-                confidence_score = self._parse_confidence_score(confidence_score_text)
+                # Extract confidence score - try multiple possible key formats
+                confidence_score = 0
+                confidence_keys = [
+                    "Confidence score (0-100) _How much confidence do you have in your own review?_",
+                    "Confidence score (0-100)",
+                    "Confidence score"
+                ]
+                
+                for key in confidence_keys:
+                    if key in review_content:
+                        confidence_score_text = review_content[key]
+                        confidence_score = self._parse_confidence_score(confidence_score_text)
+                        if confidence_score > 0:
+                            break
+                
+                # Log the extracted confidence score
+                logger.info(f"Extracted confidence score {confidence_score} for reviewer {reviewer_name}")
                 
                 review_data = {
                     "reviewer_name": reviewer_name,
@@ -101,8 +112,9 @@ class Project:
                 }
                 
                 reviews.append(review_data)
+                
             except Exception as e:
-                print(f"Error parsing review file {review_file}: {str(e)}")
+                logger.error(f"Error parsing review file {review_file}: {str(e)}")
         
         return reviews
     
@@ -116,16 +128,28 @@ class Project:
         Returns:
             Integer confidence score (0-100)
         """
+        from logging_utils import logger
+        
+        logger.debug(f"Parsing confidence score from: '{confidence_text}'")
+        
         # Try to extract a number from the text
         try:
-            # Extract the first number found
+            # First, check if it's already a number
+            if confidence_text.isdigit():
+                score = int(confidence_text)
+                return max(0, min(100, score))
+                
+            # Extract numbers using regex
             import re
             numbers = re.findall(r'\d+', confidence_text)
             if numbers:
                 score = int(numbers[0])
+                logger.debug(f"Found confidence score: {score}")
                 return max(0, min(100, score))  # Ensure in range 0-100
-        except:
-            pass
+                
+            logger.warning(f"No valid confidence score found in: '{confidence_text}'")
+        except Exception as e:
+            logger.error(f"Error parsing confidence score: {str(e)}")
         
         return 0  # Default if no valid score found
     

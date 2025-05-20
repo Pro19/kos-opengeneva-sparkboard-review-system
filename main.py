@@ -13,6 +13,49 @@ from reviewer import ReviewerProfile
 from review import ReviewAnalyzer
 from feedback import FeedbackGenerator
 from config import PATHS
+from config import SETTINGS
+from logging_utils import logger
+
+def check_requirements():
+    """Check for required dependencies and warn about optional ones."""
+    from logging_utils import logger
+    
+    # Required dependencies
+    required = ["requests", "sklearn"]
+    missing_required = []
+    
+    # Optional dependencies
+    optional = {
+        "matplotlib": "Visualization charts will be skipped"
+    }
+    missing_optional = []
+    
+    # Check required
+    for package in required:
+        try:
+            __import__(package)
+        except ImportError:
+            missing_required.append(package)
+    
+    # Check optional
+    for package, message in optional.items():
+        try:
+            __import__(package)
+        except ImportError:
+            missing_optional.append(f"{package} - {message}")
+    
+    # Report results
+    if missing_required:
+        logger.error(f"Missing required dependencies: {', '.join(missing_required)}")
+        logger.error("Please install them with: pip install " + " ".join(missing_required))
+        return False
+    
+    if missing_optional:
+        logger.warning("Missing optional dependencies:")
+        for missing in missing_optional:
+            logger.warning(f"  - {missing}")
+    
+    return True
 
 def process_project(project: Project, ontology: Ontology, output_dir: str = "output") -> None:
     """
@@ -23,7 +66,7 @@ def process_project(project: Project, ontology: Ontology, output_dir: str = "out
         ontology: Ontology object
         output_dir: Directory to save output files
     """
-    print(f"\nProcessing project: {project.project_id}")
+    logger.info(f"Processing project: {project.project_id}")
     
     # Initialize components
     reviewer_profiler = ReviewerProfile(ontology)
@@ -31,27 +74,34 @@ def process_project(project: Project, ontology: Ontology, output_dir: str = "out
     feedback_generator = FeedbackGenerator(ontology)
     
     # Step 1: Analyze all reviews for the project
-    print("Analyzing reviews...")
+    logger.info("Analyzing reviews")
     review_analyzer.analyze_project_reviews(project)
     
     # Step 2: Generate feedback report
-    print("Generating feedback report...")
+    logger.info("Generating feedback report")
     report_path = feedback_generator.generate_feedback_report(project, output_dir)
-    print(f"Feedback report saved to: {report_path}")
+    logger.info(f"Feedback report saved to: {report_path}")
     
     # Step 3: Prepare visualization data
     viz_data = feedback_generator.visualize_feedback(project)
     viz_path = os.path.join(output_dir, f"{project.project_id}_visualization.json")
     with open(viz_path, 'w', encoding='utf-8') as f:
         json.dump(viz_data, f, indent=2)
-    print(f"Visualization data saved to: {viz_path}")
+    logger.info(f"Visualization data saved to: {viz_path}")
     
     # Step 4: Update ontology with project insights
-    print("Updating ontology with project insights...")
-    ontology.update_ontology_with_llm(project.get_full_description())
+    update_ontology = SETTINGS.get("update_ontology", False)
+    if update_ontology:
+        logger.info("Updating ontology with project insights...")
+        ontology.update_ontology_with_llm(project.get_full_description())
+    else:
+        logger.info("Skipping ontology update (disabled in settings)")
 
 def main() -> None:
     """Main entry point for the application."""
+    if not check_requirements():
+        return
+    
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="Ontology-Driven Hackathon Review System")
     parser.add_argument("--project", help="Process a specific project ID")
@@ -63,12 +113,12 @@ def main() -> None:
     os.makedirs(args.output, exist_ok=True)
     
     # Initialize or load ontology
-    print("Initializing ontology...")
+    logger.info("Initializing ontology")
     ontology = Ontology(load_existing=not args.new_ontology)
     
     # Load projects
     projects = load_all_projects()
-    print(f"Loaded {len(projects)} projects")
+    logger.info(f"Loaded {len(projects)} projects")
     
     if args.project:
         # Process specific project
@@ -77,7 +127,7 @@ def main() -> None:
                 process_project(project, ontology, args.output)
                 break
         else:
-            print(f"Project {args.project} not found")
+            logger.error(f"Project {args.project} not found")
     else:
         # Process all projects
         for project in projects:
@@ -85,7 +135,7 @@ def main() -> None:
     
     # Save final ontology
     ontology.save_ontology()
-    print("\nProcessing complete!")
+    logger.info("Processing complete!")
 
 if __name__ == "__main__":
     main()

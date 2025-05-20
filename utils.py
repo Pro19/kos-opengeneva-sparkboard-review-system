@@ -8,6 +8,7 @@ import json
 from typing import Dict, List, Any, Tuple, Optional
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
+from logging_utils import logger
 
 def parse_markdown_file(file_path: str) -> Dict[str, str]:
     """
@@ -19,6 +20,8 @@ def parse_markdown_file(file_path: str) -> Dict[str, str]:
     Returns:
         Dictionary with parsed content
     """
+    from logging_utils import logger
+    
     with open(file_path, 'r', encoding='utf-8') as file:
         content = file.read()
     
@@ -36,7 +39,11 @@ def parse_markdown_file(file_path: str) -> Dict[str, str]:
         elif line.startswith('## '):
             if current_section:
                 sections[current_section] = '\n'.join(current_content).strip()
-            current_section = line[3:].strip()
+            # Remove trailing colon if present (common in markdown formats)
+            header_text = line[3:].strip()
+            if header_text.endswith(':'):
+                header_text = header_text[:-1].strip()
+            current_section = header_text
             current_content = []
         else:
             if current_section:
@@ -46,28 +53,40 @@ def parse_markdown_file(file_path: str) -> Dict[str, str]:
     if current_section:
         sections[current_section] = '\n'.join(current_content).strip()
     
+    # Log the parsed sections for debugging
+    logger.debug(f"Parsed sections from {file_path}: {list(sections.keys())}")
+    
     return sections
 
 def calculate_text_similarity(text1: str, text2: str) -> float:
-    """
-    Calculate cosine similarity between two text strings.
+    """Calculate cosine similarity between two text strings."""
     
-    Args:
-        text1: First text string
-        text2: Second text string
-        
-    Returns:
-        Similarity score between 0 and 1
-    """
-    # This is a simplified version - in production, use a proper embedding model
-    from sklearn.feature_extraction.text import TfidfVectorizer
+    # Validate inputs
+    if not text1 or not text2:
+        logger.warning("Empty text provided for similarity calculation")
+        raise ValueError("Both text strings must be non-empty for similarity calculation")
     
-    vectorizer = TfidfVectorizer()
     try:
+        from sklearn.feature_extraction.text import TfidfVectorizer
+        
+        vectorizer = TfidfVectorizer()
         tfidf_matrix = vectorizer.fit_transform([text1, text2])
-        return cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
-    except:
-        return 0.0
+        similarity = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
+        
+        logger.debug(f"Calculated text similarity: {similarity}")
+        return float(similarity)  # Ensure we return a float
+    
+    except ImportError as e:
+        logger.error(f"Missing dependency for text similarity: {str(e)}")
+        raise ValueError(f"Required dependency not available: {str(e)}")
+    
+    except ValueError as e:
+        logger.error(f"Vectorization error in text similarity: {str(e)}")
+        raise ValueError(f"Error in text vectorization: {str(e)}")
+    
+    except Exception as e:
+        logger.error(f"Unexpected error in text similarity calculation: {str(e)}")
+        raise ValueError(f"Error calculating text similarity: {str(e)}")
 
 def extract_confidence_score(review_content: Dict[str, str]) -> int:
     """

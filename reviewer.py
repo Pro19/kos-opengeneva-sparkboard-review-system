@@ -23,18 +23,9 @@ class ReviewerProfile:
         self.reviewer_profiles = {}  # Cache for reviewer profiles
     
     def classify_reviewer(self, reviewer_name: str, review_text: str, confidence_score: int, links: Dict[str, str] = None) -> Dict[str, Any]:
-        """
-        Classify a reviewer based on their review and profile information.
+        """Classify a reviewer based on their review and profile information."""
+        from logging_utils import logger
         
-        Args:
-            reviewer_name: Name of the reviewer
-            review_text: Text of the review
-            confidence_score: Confidence score (0-100)
-            links: Dictionary of external profile links
-            
-        Returns:
-            Dictionary with reviewer classification data
-        """
         # Check if we already have a profile for this reviewer
         if reviewer_name in self.reviewer_profiles:
             return self.reviewer_profiles[reviewer_name]
@@ -45,10 +36,16 @@ class ReviewerProfile:
         # Classify reviewer into a domain
         domain = classify_reviewer_domain(reviewer_name, review_text, self.ontology)
         
-        # Check external profiles if links are provided
+        # Check external profiles if links are provided and not empty
         external_data = {}
-        if links:
+        if links and any(links.values()):
+            logger.info(f"External links provided for {reviewer_name}, checking profiles...")
             external_data = self._check_external_profiles(links)
+            # Use external profile data to enhance domain classification if possible
+            # (Keeping mock implementation for now as requested)
+        else:
+            logger.info(f"No external links provided for {reviewer_name}, relying on confidence score ({confidence_score}) and review text...")
+            # When no links are provided, we rely entirely on confidence score and review text
         
         # Create reviewer profile
         profile = {

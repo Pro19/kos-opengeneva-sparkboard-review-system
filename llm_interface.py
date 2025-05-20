@@ -2,180 +2,149 @@
 Interface for interacting with language models (Claude, ChatGPT, Ollama)
 """
 
-import json
+import time
 import requests
+import json
 from typing import Dict, List, Any, Optional
+from logging_utils import logger
 from config import LLM_CONFIG
 
 def generate_llm_response(prompt: str, provider: str = None) -> str:
-    """
-    Generate a response using a language model.
-    
-    Args:
-        prompt: Text prompt to send to the LLM
-        provider: Optional override for the LLM provider
-        
-    Returns:
-        Response text from the LLM
-    """
+    """Generate a response using a language model with retry mechanism."""
     # Get the provider from config if not specified
     if provider is None:
         provider = LLM_CONFIG.get("provider", "ollama")
     
-    # Call the appropriate API
-    if provider.lower() == "claude":
-        return _call_claude_api(prompt)
-    elif provider.lower() == "chatgpt":
-        return _call_chatgpt_api(prompt)
-    elif provider.lower() == "ollama":
-        return _call_ollama_api(prompt)
-    else:
-        raise ValueError(f"Unsupported LLM provider: {provider}")
+    # Get retry settings from config
+    max_retries = LLM_CONFIG.get("max_retries", 3)
+    retry_delay = LLM_CONFIG.get("retry_delay", 2)
+    
+    # Try with retries
+    for attempt in range(1, max_retries + 1):
+        try:
+            # Call the appropriate API
+            if provider.lower() == "claude":
+                return _call_claude_api(prompt)
+            elif provider.lower() == "chatgpt":
+                return _call_chatgpt_api(prompt)
+            elif provider.lower() == "ollama":
+                return _call_ollama_api(prompt)
+            else:
+                raise ValueError(f"Unsupported LLM provider: {provider}")
+        
+        except Exception as e:
+            logger.error(f"Error calling {provider} API (attempt {attempt}/{max_retries}): {str(e)}")
+            
+            # If we've reached max retries, raise the exception
+            if attempt >= max_retries:
+                logger.critical(f"Failed to generate response after {max_retries} attempts.")
+                raise Exception(f"All {max_retries} attempts to generate a response with {provider} failed. Pipeline has failed and must be restarted from scratch.")
+            
+            # Otherwise, wait and retry
+            logger.info(f"Retrying in {retry_delay} seconds...")
+            time.sleep(retry_delay)
 
 def _call_claude_api(prompt: str) -> str:
-    """
-    Call the Claude API to generate a response.
+    """Call the Claude API to generate a response."""
+    config = LLM_CONFIG.get("claude", {})
+    api_key = config.get("api_key")
+    model = config.get("model", "claude-3-opus-20240229")
+    max_tokens = config.get("max_tokens", 1000)
     
-    Args:
-        prompt: Text prompt to send to Claude
-        
-    Returns:
-        Response text from Claude
-    """
-    try:
-        config = LLM_CONFIG.get("claude", {})
-        api_key = config.get("api_key")
-        model = config.get("model", "claude-3-opus-20240229")
-        max_tokens = config.get("max_tokens", 1000)
-        
-        # Print status for logging
-        print(f"Calling Claude API with model {model}...")
-        
-        # Make API call
-        headers = {
-            "x-api-key": api_key,
-            "content-type": "application/json",
-            "anthropic-version": "2023-06-01"
-        }
-        
-        payload = {
-            "model": model,
-            "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": max_tokens
-        }
-        
-        response = requests.post(
-            "https://api.anthropic.com/v1/messages",
-            headers=headers,
-            json=payload
-        )
-        
-        if response.status_code == 200:
-            return response.json()["content"][0]["text"]
-        else:
-            print(f"Error calling Claude API: {response.status_code} - {response.text}")
-            # Fall back to simulation for demo/testing
-            return f"Simulated Claude response. Error occurred: {response.status_code}"
-        
-    except Exception as e:
-        print(f"Error calling Claude API: {str(e)}")
-        # Fall back to simulation for demo/testing
-        return "Simulated Claude response due to API error."
+    logger.info(f"Calling Claude API with model {model}...")
+    
+    headers = {
+        "x-api-key": api_key,
+        "content-type": "application/json",
+        "anthropic-version": "2023-06-01"
+    }
+    
+    payload = {
+        "model": model,
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": max_tokens
+    }
+    
+    response = requests.post(
+        "https://api.anthropic.com/v1/messages",
+        headers=headers,
+        json=payload,
+        timeout=30  # Add timeout
+    )
+    
+    if response.status_code == 200:
+        return response.json()["content"][0]["text"]
+    else:
+        logger.error(f"Claude API error: {response.status_code} - {response.text}")
+        raise Exception(f"Claude API error: {response.status_code} - {response.text}")
 
 def _call_chatgpt_api(prompt: str) -> str:
-    """
-    Call the ChatGPT API to generate a response.
+    """Call the ChatGPT API to generate a response."""
+    config = LLM_CONFIG.get("chatgpt", {})
+    api_key = config.get("api_key")
+    model = config.get("model", "gpt-4-turbo")
+    max_tokens = config.get("max_tokens", 1000)
     
-    Args:
-        prompt: Text prompt to send to ChatGPT
-        
-    Returns:
-        Response text from ChatGPT
-    """
-    try:
-        config = LLM_CONFIG.get("chatgpt", {})
-        api_key = config.get("api_key")
-        model = config.get("model", "gpt-4-turbo")
-        max_tokens = config.get("max_tokens", 1000)
-        
-        # Print status for logging
-        print(f"Calling ChatGPT API with model {model}...")
-        
-        # Make API call
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
-        }
-        
-        payload = {
-            "model": model,
-            "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": max_tokens
-        }
-        
-        response = requests.post(
-            "https://api.openai.com/v1/chat/completions",
-            headers=headers,
-            json=payload
-        )
-        
-        if response.status_code == 200:
-            return response.json()["choices"][0]["message"]["content"]
-        else:
-            print(f"Error calling ChatGPT API: {response.status_code} - {response.text}")
-            # Fall back to simulation for demo/testing
-            return f"Simulated ChatGPT response. Error occurred: {response.status_code}"
-        
-    except Exception as e:
-        print(f"Error calling ChatGPT API: {str(e)}")
-        # Fall back to simulation for demo/testing
-        return "Simulated ChatGPT response due to API error."
+    logger.info(f"Calling ChatGPT API with model {model}...")
+    
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "model": model,
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": max_tokens
+    }
+    
+    response = requests.post(
+        "https://api.openai.com/v1/chat/completions",
+        headers=headers,
+        json=payload,
+        timeout=30  # Add timeout
+    )
+    
+    if response.status_code == 200:
+        return response.json()["choices"][0]["message"]["content"]
+    else:
+        logger.error(f"ChatGPT API error: {response.status_code} - {response.text}")
+        raise Exception(f"ChatGPT API error: {response.status_code} - {response.text}")
 
 def _call_ollama_api(prompt: str) -> str:
-    """
-    Call the Ollama API to generate a response.
+    """Call the Ollama API to generate a response."""
+    config = LLM_CONFIG.get("ollama", {})
+    base_url = config.get("base_url", "http://localhost:11434")
+    model = config.get("model", "llama3")
+    max_tokens = config.get("max_tokens", 1000)
     
-    Args:
-        prompt: Text prompt to send to Ollama
-        
-    Returns:
-        Response text from Ollama
-    """
-    try:
-        config = LLM_CONFIG.get("ollama", {})
-        base_url = config.get("base_url", "http://localhost:11434")
-        model = config.get("model", "llama3")
-        max_tokens = config.get("max_tokens", 1000)
-        
-        # Print status for logging
-        print(f"Calling Ollama API with model {model}...")
-        
-        # Make API call
-        payload = {
-            "model": model,
-            "prompt": prompt,
-            "stream": False,
-            "options": {
-                "num_predict": max_tokens
-            }
+    logger.info(f"Calling Ollama API with model {model}...")
+    
+    payload = {
+        "model": model,
+        "prompt": prompt,
+        "stream": False,
+        "options": {
+            "num_predict": max_tokens
         }
-        
-        response = requests.post(
-            f"{base_url}/api/generate",
-            json=payload
-        )
-        
-        if response.status_code == 200:
-            return response.json().get("response", "")
+    }
+    
+    response = requests.post(
+        f"{base_url}/api/generate",
+        json=payload,
+        timeout=180  # Longer timeout for local models which might be slower
+    )
+    
+    if response.status_code == 200:
+        response_json = response.json()
+        if "response" in response_json:
+            return response_json["response"]
         else:
-            print(f"Error calling Ollama API: {response.status_code} - {response.text}")
-            # Fall back to simulation for demo/testing
-            return f"Simulated Ollama response. Error occurred: {response.status_code}"
-        
-    except Exception as e:
-        print(f"Error calling Ollama API: {str(e)}")
-        # Fall back to simulation for demo/testing
-        return "Simulated Ollama response due to API error."
+            logger.error(f"Unexpected Ollama API response format: {response_json}")
+            raise Exception(f"Unexpected Ollama API response format: missing 'response' field")
+    else:
+        logger.error(f"Ollama API error: {response.status_code} - {response.text}")
+        raise Exception(f"Ollama API error: {response.status_code} - {response.text}")
 
 def generate_artificial_review(project_description: str, domain: str, ontology: Any) -> Dict[str, Any]:
     """

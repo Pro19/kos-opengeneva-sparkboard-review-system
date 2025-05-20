@@ -6,6 +6,8 @@ import os
 from typing import Dict, List, Any, Optional
 import json
 from config import FEEDBACK_SETTINGS
+import matplotlib.pyplot as plt
+import numpy as np
 
 class FeedbackGenerator:
     """Class for generating final feedback and visualizations."""
@@ -31,11 +33,25 @@ class FeedbackGenerator:
         Returns:
             Path to the generated report file
         """
+        from logging_utils import logger
+        from config import PATHS
+        
         # Create output directory if it doesn't exist
         os.makedirs(output_dir, exist_ok=True)
         
+        # Create visualizations directory
+        viz_dir = os.path.join(output_dir, "visualizations")
+        os.makedirs(viz_dir, exist_ok=True)
+        
         # Prepare report data
         report_data = self._prepare_report_data(project)
+        
+        # Generate radar chart
+        chart_path = self._generate_radar_chart(project, viz_dir)
+        if chart_path:
+            logger.info(f"Radar chart saved to: {chart_path}")
+            # Add chart path to report data
+            report_data["chart_path"] = os.path.relpath(chart_path, output_dir)
         
         # Generate markdown report
         report_md = self._generate_markdown_report(report_data)
@@ -112,10 +128,16 @@ class FeedbackGenerator:
             Markdown formatted report
         """
         md = f"# Feedback Report: {report_data['project_name']}\n\n"
-        
+    
         # Project description
         md += "## Project Description\n\n"
         md += f"{report_data['project_description']}\n\n"
+        
+        # Add radar chart if available
+        if report_data.get("chart_path"):
+            md += "## Project Evaluation Chart\n\n"
+            md += f"![Project Evaluation Radar Chart]({report_data['chart_path']})\n\n"
+            md = f"# Feedback Report: {report_data['project_name']}\n\n"
         
         # Feedback scores
         md += "## Feedback Scores\n\n"
@@ -253,3 +275,66 @@ class FeedbackGenerator:
             visualization_data["domain_breakdown"].append(domain_data)
         
         return visualization_data
+    
+    def _generate_radar_chart(self, project, output_dir: str) -> Optional[str]:
+        """Generate a radar chart for the project feedback scores."""
+        from logging_utils import logger
+        from config import FEEDBACK_SETTINGS
+        
+        try:
+            # Get chart settings from config
+            chart_settings = FEEDBACK_SETTINGS.get("chart", {})
+            chart_width = chart_settings.get("width", 8)
+            chart_height = chart_settings.get("height", 6)
+            chart_dpi = chart_settings.get("dpi", 300)
+            
+            # Get dimensions and scores
+            dimensions = []
+            scores = []
+            
+            for dimension, score in project.feedback_scores.items():
+                if dimension != "overall_sentiment":
+                    dimensions.append(dimension.replace("_", " ").title())
+                    scores.append(score)
+            
+            if not dimensions:
+                logger.warning("No dimensions found for radar chart.")
+                return None
+            
+            # Number of variables
+            N = len(dimensions)
+            
+            # Create angle and repeat first value to close the polygon
+            angles = np.linspace(0, 2*np.pi, N, endpoint=False).tolist()
+            scores.append(scores[0])
+            angles.append(angles[0])
+            dimensions.append(dimensions[0])
+            
+            # Create plot
+            fig, ax = plt.subplots(figsize=(chart_width, chart_height), subplot_kw=dict(polar=True))
+            
+            # Plot data
+            ax.plot(angles, scores, 'o-', linewidth=2)
+            ax.fill(angles, scores, alpha=0.25)
+            
+            # Set labels
+            ax.set_thetagrids(np.degrees(angles[:-1]), dimensions[:-1])
+            
+            # Set y-axis limits
+            ax.set_ylim(0, 5)
+            
+            # Add title
+            plt.title(f"Project Evaluation: {project.project_data.get('name', project.project_id)}", 
+                    size=15, color='darkblue', y=1.1)
+            
+            # Save chart
+            chart_file = os.path.join(output_dir, f"{project.project_id}_radar_chart.png")
+            plt.tight_layout()
+            plt.savefig(chart_file, dpi=chart_dpi, bbox_inches='tight')
+            plt.close()
+            
+            return chart_file
+        
+        except Exception as e:
+            logger.error(f"Error generating radar chart: {str(e)}")
+            return None
