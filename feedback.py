@@ -8,6 +8,7 @@ import json
 from config import FEEDBACK_SETTINGS
 import matplotlib.pyplot as plt
 import numpy as np
+from utils import remove_thinking_tags
 
 class FeedbackGenerator:
     """Class for generating final feedback and visualizations."""
@@ -55,6 +56,9 @@ class FeedbackGenerator:
         
         # Generate markdown report
         report_md = self._generate_markdown_report(report_data)
+
+        # One final cleaning pass to make sure no thinking tags remain
+        report_md = remove_thinking_tags(report_md)
         
         # Save report to file
         report_file = os.path.join(output_dir, f"{project.project_id}_feedback.md")

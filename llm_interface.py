@@ -8,6 +8,7 @@ import json
 from typing import Dict, List, Any, Optional
 from logging_utils import logger
 from config import LLM_CONFIG
+from utils import remove_thinking_tags
 
 def generate_llm_response(prompt: str, provider: str = None) -> str:
     """Generate a response using a language model with retry mechanism."""
@@ -24,13 +25,17 @@ def generate_llm_response(prompt: str, provider: str = None) -> str:
         try:
             # Call the appropriate API
             if provider.lower() == "claude":
-                return _call_claude_api(prompt)
+                response = _call_claude_api(prompt)
             elif provider.lower() == "chatgpt":
-                return _call_chatgpt_api(prompt)
+                response = _call_chatgpt_api(prompt)
             elif provider.lower() == "ollama":
-                return _call_ollama_api(prompt)
+                response = _call_ollama_api(prompt)
             else:
                 raise ValueError(f"Unsupported LLM provider: {provider}")
+                
+            # Clean any thinking tags from the response
+            cleaned_response = remove_thinking_tags(response)
+            return cleaned_response
         
         except Exception as e:
             logger.error(f"Error calling {provider} API (attempt {attempt}/{max_retries}): {str(e)}")
@@ -191,6 +196,7 @@ def generate_artificial_review(project_description: str, domain: str, ontology: 
         prompt += "\n".join(dimension_prompts)
     
     response = generate_llm_response(prompt)
+    cleaned_response = remove_thinking_tags(response)
     
     # Extract a confidence score (default to 90 for artificial reviews)
     confidence_score = 90
@@ -201,7 +207,7 @@ def generate_artificial_review(project_description: str, domain: str, ontology: 
         "reviewer_name": f"AI {domain_name} Expert",
         "domain": domain,
         "is_artificial": True,
-        "text_review": response,
+        "text_review": cleaned_response,
         "confidence_score": confidence_score
     }
     

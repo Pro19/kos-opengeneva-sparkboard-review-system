@@ -162,3 +162,36 @@ def load_json(file_path: str) -> Any:
     
     with open(file_path, 'r', encoding='utf-8') as file:
         return json.load(file)
+
+def remove_thinking_tags(text: str) -> str:
+    """
+    Remove thinking tags and their contents from LLM-generated text.
+    
+    Args:
+        text: Raw text that might contain thinking tags
+        
+    Returns:
+        Clean text with thinking tags and their contents removed
+    """
+    import re
+    from logging_utils import logger
+    
+    # Patterns to look for
+    patterns = [
+        r'<think>[\s\S]*?</think>',  # <think> tags
+        r'<thinking>[\s\S]*?</thinking>',  # <thinking> tags
+        r'<reasoning>[\s\S]*?</reasoning>',  # <reasoning> tags
+        r'<internal>[\s\S]*?</internal>'  # <internal> tags
+    ]
+    
+    original_length = len(text)
+    
+    # Apply each pattern
+    for pattern in patterns:
+        text = re.sub(pattern, '', text)
+    
+    # Check if we made any replacements
+    if len(text) < original_length:
+        logger.info(f"Removed {original_length - len(text)} characters of thinking/reasoning tags")
+    
+    return text
