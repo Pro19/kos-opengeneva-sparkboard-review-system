@@ -1,0 +1,88 @@
+{
+  "project_name": "AI-Powered Health Assistant for Chronic Disease Management",
+  "radar_chart": {
+    "dimensions": [
+      "Technical Feasibility",
+      "Innovation",
+      "Impact",
+      "Implementation Complexity",
+      "Scalability",
+      "Return On Investment"
+    ],
+    "scores": [
+      3.0,
+      3.0,
+      3.0,
+      3.0,
+      3.0,
+      3.0
+    ]
+  },
+  "domain_breakdown": [
+    {
+      "name": "Technical",
+      "review_count": 3,
+      "artificial_count": 0,
+      "dimension_scores": {
+        "Technical Feasibility": 3.0,
+        "Innovation": 3.0,
+        "Impact": 3.0,
+        "Implementation Complexity": 3.0,
+        "Scalability": 3.0,
+        "Return On Investment": 3.0
+      }
+    },
+    {
+      "name": "Clinical",
+      "review_count": 1,
+      "artificial_count": 0,
+      "dimension_scores": {
+        "Technical Feasibility": 3.0,
+        "Innovation": 3.0,
+        "Impact": 3.0,
+        "Implementation Complexity": 3.0,
+        "Scalability": 3.0,
+        "Return On Investment": 3.0
+      }
+    },
+    {
+      "name": "Administrative",
+      "review_count": 1,
+      "artificial_count": 1,
+      "dimension_scores": {
+        "Technical Feasibility": 3.0,
+        "Innovation": 3.0,
+        "Impact": 3.0,
+        "Implementation Complexity": 3.0,
+        "Scalability": 3.0,
+        "Return On Investment": 3.0
+      }
+    },
+    {
+      "name": "Design",
+      "review_count": 1,
+      "artificial_count": 1,
+      "dimension_scores": {
+        "Technical Feasibility": 3.0,
+        "Innovation": 3.0,
+        "Impact": 3.0,
+        "Implementation Complexity": 3.0,
+        "Scalability": 3.0,
+        "Return On Investment": 3.0
+      }
+    },
+    {
+      "name": "User_experience",
+      "review_count": 1,
+      "artificial_count": 1,
+      "dimension_scores": {
+        "Technical Feasibility": 3.0,
+        "Innovation": 3.0,
+        "Impact": 3.0,
+        "Implementation Complexity": 3.0,
+        "Scalability": 3.0,
+        "Return On Investment": 3.0
+      }
+    }
+  ]
+}
