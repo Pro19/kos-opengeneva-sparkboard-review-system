@@ -1,0 +1,472 @@
+{
+  "domains": {
+    "technical": {
+      "name": "Technical",
+      "description": "Expertise in programming, software engineering, hardware development, or technical implementation",
+      "keywords": [
+        "programming",
+        "software",
+        "hardware",
+        "development",
+        "engineering",
+        "technical",
+        "code"
+      ],
+      "subdomains": {
+        "frontend": {
+          "name": "Frontend Development",
+          "keywords": [
+            "UI",
+            "UX",
+            "web",
+            "mobile",
+            "frontend"
+          ]
+        },
+        "backend": {
+          "name": "Backend Development",
+          "keywords": [
+            "server",
+            "database",
+            "API",
+            "backend"
+          ]
+        },
+        "data_science": {
+          "name": "Data Science",
+          "keywords": [
+            "machine learning",
+            "AI",
+            "data",
+            "analytics"
+          ]
+        },
+        "devops": {
+          "name": "DevOps",
+          "keywords": [
+            "deployment",
+            "infrastructure",
+            "cloud",
+            "CI/CD"
+          ]
+        }
+      }
+    },
+    "clinical": {
+      "name": "Clinical",
+      "description": "Medical or healthcare expertise related to patient care, diagnosis, or treatment",
+      "keywords": [
+        "medical",
+        "healthcare",
+        "clinical",
+        "patient",
+        "diagnosis",
+        "treatment",
+        "doctor",
+        "nurse"
+      ],
+      "subdomains": {
+        "primary_care": {
+          "name": "Primary Care",
+          "keywords": [
+            "general practice",
+            "family medicine"
+          ]
+        },
+        "specialty": {
+          "name": "Medical Specialties",
+          "keywords": [
+            "cardiology",
+            "neurology",
+            "oncology"
+          ]
+        },
+        "nursing": {
+          "name": "Nursing",
+          "keywords": [
+            "nurse",
+            "patient care",
+            "bedside"
+          ]
+        },
+        "emergency": {
+          "name": "Emergency Medicine",
+          "keywords": [
+            "emergency",
+            "urgent care",
+            "trauma"
+          ]
+        }
+      }
+    },
+    "administrative": {
+      "name": "Administrative",
+      "description": "Expertise in healthcare administration, policy, and management",
+      "keywords": [
+        "administration",
+        "management",
+        "policy",
+        "governance",
+        "operations"
+      ],
+      "subdomains": {
+        "hospital_admin": {
+          "name": "Hospital Administration",
+          "keywords": [
+            "hospital",
+            "facility",
+            "operations"
+          ]
+        },
+        "health_policy": {
+          "name": "Health Policy",
+          "keywords": [
+            "policy",
+            "regulation",
+            "compliance"
+          ]
+        },
+        "operations": {
+          "name": "Healthcare Operations",
+          "keywords": [
+            "workflow",
+            "process",
+            "efficiency"
+          ]
+        }
+      }
+    },
+    "business": {
+      "name": "Business",
+      "description": "Expertise in business models, market analysis, and commercialization",
+      "keywords": [
+        "business",
+        "market",
+        "commercialization",
+        "monetization",
+        "startup",
+        "entrepreneur"
+      ],
+      "subdomains": {
+        "strategy": {
+          "name": "Business Strategy",
+          "keywords": [
+            "strategy",
+            "planning",
+            "vision"
+          ]
+        },
+        "finance": {
+          "name": "Finance",
+          "keywords": [
+            "funding",
+            "investment",
+            "revenue",
+            "cost"
+          ]
+        },
+        "marketing": {
+          "name": "Marketing",
+          "keywords": [
+            "marketing",
+            "branding",
+            "growth"
+          ]
+        },
+        "entrepreneurship": {
+          "name": "Entrepreneurship",
+          "keywords": [
+            "startup",
+            "venture",
+            "founding"
+          ]
+        }
+      }
+    },
+    "design": {
+      "name": "Design",
+      "description": "Expertise in user interface, user experience, and visual design",
+      "keywords": [
+        "design",
+        "UI",
+        "UX",
+        "visual",
+        "graphic",
+        "user interface",
+        "user experience"
+      ],
+      "subdomains": {
+        "ui_design": {
+          "name": "UI Design",
+          "keywords": [
+            "interface",
+            "visual",
+            "graphic"
+          ]
+        },
+        "ux_design": {
+          "name": "UX Design",
+          "keywords": [
+            "experience",
+            "interaction",
+            "usability",
+            "accessibility"
+          ]
+        },
+        "service_design": {
+          "name": "Service Design",
+          "keywords": [
+            "service",
+            "journey",
+            "touchpoint"
+          ]
+        }
+      }
+    },
+    "user_experience": {
+      "name": "User Experience",
+      "description": "Expertise in how users interact with products and services",
+      "keywords": [
+        "user",
+        "experience",
+        "usability",
+        "user testing",
+        "user research",
+        "human-computer interaction"
+      ],
+      "subdomains": {
+        "user_research": {
+          "name": "User Research",
+          "keywords": [
+            "research",
+            "interviews",
+            "surveys",
+            "testing"
+          ]
+        },
+        "accessibility": {
+          "name": "Accessibility",
+          "keywords": [
+            "accessible",
+            "inclusion",
+            "disability"
+          ]
+        },
+        "behavior": {
+          "name": "User Behavior",
+          "keywords": [
+            "behavior",
+            "psychology",
+            "cognitive"
+          ]
+        }
+      }
+    }
+  },
+  "project_types": {
+    "software": {
+      "name": "Software",
+      "description": "Projects primarily focused on software solutions",
+      "keywords": [
+        "app",
+        "application",
+        "software",
+        "platform",
+        "digital",
+        "mobile",
+        "web"
+      ]
+    },
+    "hardware": {
+      "name": "Hardware",
+      "description": "Projects involving physical devices or hardware components",
+      "keywords": [
+        "device",
+        "hardware",
+        "physical",
+        "wearable",
+        "sensor",
+        "equipment"
+      ]
+    },
+    "data": {
+      "name": "Data",
+      "description": "Projects centered around data collection, analysis, or visualization",
+      "keywords": [
+        "data",
+        "analytics",
+        "visualization",
+        "dashboard",
+        "metrics",
+        "statistics"
+      ]
+    },
+    "process": {
+      "name": "Process",
+      "description": "Projects focused on improving workflows or processes",
+      "keywords": [
+        "process",
+        "workflow",
+        "procedure",
+        "protocol",
+        "method",
+        "system"
+      ]
+    },
+    "service": {
+      "name": "Service",
+      "description": "Projects creating or improving service delivery",
+      "keywords": [
+        "service",
+        "delivery",
+        "care",
+        "support",
+        "assistance",
+        "help"
+      ]
+    }
+  },
+  "impact_dimensions": {
+    "technical_feasibility": {
+      "name": "Technical Feasibility",
+      "description": "How technically feasible is the project to implement",
+      "scale": {
+        "1": "Extremely difficult or impossible with current technology",
+        "2": "Substantial technical challenges",
+        "3": "Moderate technical challenges",
+        "4": "Few technical challenges",
+        "5": "Easily implementable with existing technology"
+      }
+    },
+    "innovation": {
+      "name": "Innovation",
+      "description": "How innovative or novel is the approach",
+      "scale": {
+        "1": "Not innovative, duplicates existing solutions",
+        "2": "Minor improvements to existing approaches",
+        "3": "Moderate innovation with some novel aspects",
+        "4": "Significantly innovative approach",
+        "5": "Groundbreaking, completely novel approach"
+      }
+    },
+    "impact": {
+      "name": "Impact",
+      "description": "Potential impact on the target problem or domain",
+      "scale": {
+        "1": "Minimal or no impact",
+        "2": "Limited impact",
+        "3": "Moderate impact",
+        "4": "Significant impact",
+        "5": "Transformative impact"
+      }
+    },
+    "implementation_complexity": {
+      "name": "Implementation Complexity",
+      "description": "Complexity of implementing the solution in practice",
+      "scale": {
+        "1": "Extremely complex implementation",
+        "2": "Highly complex implementation",
+        "3": "Moderately complex implementation",
+        "4": "Relatively simple implementation",
+        "5": "Very straightforward implementation"
+      }
+    },
+    "scalability": {
+      "name": "Scalability",
+      "description": "Ability to scale to wider implementation",
+      "scale": {
+        "1": "Not scalable beyond initial context",
+        "2": "Limited scalability",
+        "3": "Moderately scalable",
+        "4": "Highly scalable",
+        "5": "Extremely scalable with minimal effort"
+      }
+    },
+    "return_on_investment": {
+      "name": "Return on Investment",
+      "description": "Expected return relative to investment required",
+      "scale": {
+        "1": "Poor ROI, costs greatly exceed benefits",
+        "2": "Limited ROI, costs somewhat exceed benefits",
+        "3": "Moderate ROI, benefits roughly equal costs",
+        "4": "Good ROI, benefits exceed costs",
+        "5": "Excellent ROI, benefits greatly exceed costs"
+      }
+    }
+  },
+  "expertise_levels": {
+    "beginner": {
+      "name": "Beginner",
+      "description": "Basic understanding of the domain",
+      "confidence_range": [
+        0,
+        40
+      ]
+    },
+    "skilled": {
+      "name": "Skilled",
+      "description": "Practical experience and good understanding of the domain",
+      "confidence_range": [
+        41,
+        70
+      ]
+    },
+    "talented": {
+      "name": "Talented",
+      "description": "Deep understanding and significant experience in the domain",
+      "confidence_range": [
+        71,
+        85
+      ]
+    },
+    "seasoned": {
+      "name": "Seasoned",
+      "description": "Extensive experience and comprehensive knowledge of the domain",
+      "confidence_range": [
+        86,
+        95
+      ]
+    },
+    "expert": {
+      "name": "Expert",
+      "description": "Top-level expertise with mastery of the domain",
+      "confidence_range": [
+        96,
+        100
+      ]
+    }
+  },
+  "review_dimensions": {
+    "technical": [
+      "technical_feasibility",
+      "implementation_complexity",
+      "scalability",
+      "innovation"
+    ],
+    "clinical": [
+      "impact",
+      "implementation_complexity",
+      "technical_feasibility"
+    ],
+    "administrative": [
+      "implementation_complexity",
+      "scalability",
+      "return_on_investment"
+    ],
+    "business": [
+      "return_on_investment",
+      "scalability",
+      "impact"
+    ],
+    "design": [
+      "innovation",
+      "impact",
+      "implementation_complexity"
+    ],
+    "user_experience": [
+      "impact",
+      "implementation_complexity",
+      "innovation"
+    ]
+  }
+}
