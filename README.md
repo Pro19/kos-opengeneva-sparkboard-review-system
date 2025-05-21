@@ -59,10 +59,10 @@ LLM_CONFIG = {
         "max_tokens": 1000
     },
 
-    "grok": {
-        "api_key": "YOUR_GROK_API_KEY",
-        "base_url": "https://api.grok.ai/v1",
-        "model": "grok-2",
+    "groq": {
+        "api_key": "YOUR_GROQ_API_KEY",
+        "base_url": "https://api.groq.com/openai",
+        "model": "llama3-70b-8192",
         "max_tokens": 1000
     }
 }

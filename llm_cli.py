@@ -13,10 +13,10 @@ def update_config_provider(provider: str) -> None:
     Update the default LLM provider in the config file.
     
     Args:
-        provider: The provider to set as default ("claude", "chatgpt", "ollama", or "grok")
+        provider: The provider to set as default ("claude", "chatgpt", "ollama", or "groq")
     """
-    if provider not in ["claude", "chatgpt", "ollama", "grok"]:
-        print(f"Error: Invalid provider '{provider}'. Choose from: claude, chatgpt, ollama, grok")
+    if provider not in ["claude", "chatgpt", "ollama", "groq"]:
+        print(f"Error: Invalid provider '{provider}'. Choose from: claude, chatgpt, ollama, groq")
         return
     
     # Update the config file
@@ -48,8 +48,8 @@ def test_provider(provider: str, prompt: str = None) -> None:
         provider: The provider to test ("claude", "chatgpt", or "ollama")
         prompt: Optional custom prompt to use
     """
-    if provider not in ["claude", "chatgpt", "ollama", "grok"]:
-        print(f"Error: Invalid provider '{provider}'. Choose from: claude, chatgpt, ollama, grok")
+    if provider not in ["claude", "chatgpt", "ollama", "groq"]:
+        print(f"Error: Invalid provider '{provider}'. Choose from: claude, chatgpt, ollama, groq")
         return
     
     # Use default prompt if none provided
@@ -75,8 +75,16 @@ def print_current_config() -> None:
     print("-" * 80)
     print(f"Default Provider: {LLM_CONFIG.get('provider', 'ollama')}")
     
-    for provider, config in LLM_CONFIG.items():
-        if provider != "provider":
+    # Print global config options
+    print("\nGlobal Configuration:")
+    for key, value in LLM_CONFIG.items():
+        if key not in ["provider", "claude", "chatgpt", "ollama", "groq"]:
+            print(f"  {key}: {value}")
+    
+    # Print provider-specific config
+    for provider in ["claude", "chatgpt", "ollama", "groq"]:
+        if provider in LLM_CONFIG:
+            config = LLM_CONFIG[provider]
             print(f"\n{provider.upper()} Configuration:")
             for key, value in config.items():
                 if key == "api_key":
@@ -96,12 +104,12 @@ def main() -> None:
     
     # Command to set default provider
     set_parser = subparsers.add_parser("set", help="Set default LLM provider")
-    set_parser.add_argument("provider", choices=["claude", "chatgpt", "ollama", "grok"], 
+    set_parser.add_argument("provider", choices=["claude", "chatgpt", "ollama", "groq"], 
                         help="Provider to set as default")
 
     # Command to test a provider
     test_parser = subparsers.add_parser("test", help="Test an LLM provider")
-    test_parser.add_argument("provider", choices=["claude", "chatgpt", "ollama", "grok"], 
+    test_parser.add_argument("provider", choices=["claude", "chatgpt", "ollama", "groq"], 
                             help="Provider to test")
     test_parser.add_argument("--prompt", help="Custom prompt to use for testing")
     

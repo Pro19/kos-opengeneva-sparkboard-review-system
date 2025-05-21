@@ -19,7 +19,7 @@ LOGGING_CONFIG = {
 
 # LLM API configuration
 LLM_CONFIG = {
-    "provider": "ollama",  # Choose between "claude", "chatgpt", or "ollama"
+    "provider": "groq",  # Choose between "claude", "chatgpt", or "ollama"
     "max_retries": 3,      # Number of retries for API calls
     "retry_delay": 2,      # Delay between retries in seconds
     
@@ -41,10 +41,10 @@ LLM_CONFIG = {
         "max_tokens": 1000
     },
 
-    "grok": {
-        "api_key": "YOUR_GROK_API_KEY",
-        "base_url": "https://api.grok.ai/v1",  # Grok API URL
-        "model": "grok-2",  # Default Grok model
+    "groq": {
+        "api_key": "YOUR_GROQ_API_KEY",
+        "base_url": "https://api.groq.com/openai/v1/",  # Groq API URL
+        "model": "llama3-70b-8192",  # Default Groq model
         "max_tokens": 1000
     }
 }
