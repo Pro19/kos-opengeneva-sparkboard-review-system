@@ -1,0 +1,276 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix hr: <http://example.org/hackathon-review/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+
+# Classes
+hr:Domain a rdfs:Class ;
+    rdfs:label "Domain" ;
+    rdfs:comment "Knowledge and expertise domain" .
+
+hr:Subdomain a rdfs:Class ;
+    rdfs:label "Subdomain" ;
+    rdfs:comment "Specialized area within a domain" .
+
+hr:ProjectType a rdfs:Class ;
+    rdfs:label "Project Type" ;
+    rdfs:comment "Category of hackathon project" .
+
+hr:ImpactDimension a rdfs:Class ;
+    rdfs:label "Impact Dimension" ;
+    rdfs:comment "Dimension for evaluating project impact" .
+
+hr:ExpertiseLevel a rdfs:Class ;
+    rdfs:label "Expertise Level" ;
+    rdfs:comment "Level of expertise in a domain" .
+
+# Properties
+hr:hasName a rdf:Property ;
+    rdfs:domain rdfs:Resource ;
+    rdfs:range xsd:string .
+
+hr:hasDescription a rdf:Property ;
+    rdfs:domain rdfs:Resource ;
+    rdfs:range xsd:string .
+
+hr:hasKeyword a rdf:Property ;
+    rdfs:domain hr:Domain ;
+    rdfs:range xsd:string .
+
+hr:hasSubdomain a rdf:Property ;
+    rdfs:domain hr:Domain ;
+    rdfs:range hr:Subdomain .
+
+hr:hasScaleValue a rdf:Property ;
+    rdfs:domain hr:ImpactDimension ;
+    rdfs:range xsd:string .
+
+hr:hasConfidenceRangeMin a rdf:Property ;
+    rdfs:domain hr:ExpertiseLevel ;
+    rdfs:range xsd:integer .
+
+hr:hasConfidenceRangeMax a rdf:Property ;
+    rdfs:domain hr:ExpertiseLevel ;
+    rdfs:range xsd:integer .
+
+hr:hasRelevantDimension a rdf:Property ;
+    rdfs:domain hr:Domain ;
+    rdfs:range hr:ImpactDimension .
+
+# Domain instances
+hr:technical a hr:Domain ;
+    hr:hasName "Technical" ;
+    hr:hasDescription "Expertise in programming, software engineering, hardware development, or technical implementation" ;
+    hr:hasKeyword "programming", "software", "hardware", "development", "engineering", "technical", "code" .
+
+hr:technical_frontend a hr:Subdomain ;
+    hr:hasName "Frontend Development" ;
+    hr:hasKeyword "UI", "UX", "web", "mobile", "frontend" .
+
+hr:technical hr:hasSubdomain hr:technical_frontend .
+
+hr:technical_backend a hr:Subdomain ;
+    hr:hasName "Backend Development" ;
+    hr:hasKeyword "server", "database", "API", "backend" .
+
+hr:technical hr:hasSubdomain hr:technical_backend .
+
+hr:technical_data_science a hr:Subdomain ;
+    hr:hasName "Data Science" ;
+    hr:hasKeyword "machine learning", "AI", "data", "analytics" .
+
+hr:technical hr:hasSubdomain hr:technical_data_science .
+
+hr:technical_devops a hr:Subdomain ;
+    hr:hasName "DevOps" ;
+    hr:hasKeyword "deployment", "infrastructure", "cloud", "CI/CD" .
+
+hr:technical hr:hasSubdomain hr:technical_devops .
+
+hr:clinical a hr:Domain ;
+    hr:hasName "Clinical" ;
+    hr:hasDescription "Medical or healthcare expertise related to patient care, diagnosis, or treatment" ;
+    hr:hasKeyword "medical", "healthcare", "clinical", "patient", "diagnosis", "treatment", "doctor", "nurse" .
+
+hr:clinical_primary_care a hr:Subdomain ;
+    hr:hasName "Primary Care" ;
+    hr:hasKeyword "general practice", "family medicine" .
+
+hr:clinical hr:hasSubdomain hr:clinical_primary_care .
+
+hr:clinical_specialty a hr:Subdomain ;
+    hr:hasName "Medical Specialties" ;
+    hr:hasKeyword "cardiology", "neurology", "oncology" .
+
+hr:clinical hr:hasSubdomain hr:clinical_specialty .
+
+hr:clinical_nursing a hr:Subdomain ;
+    hr:hasName "Nursing" ;
+    hr:hasKeyword "nurse", "patient care", "bedside" .
+
+hr:clinical hr:hasSubdomain hr:clinical_nursing .
+
+hr:clinical_emergency a hr:Subdomain ;
+    hr:hasName "Emergency Medicine" ;
+    hr:hasKeyword "emergency", "urgent care", "trauma" .
+
+hr:clinical hr:hasSubdomain hr:clinical_emergency .
+
+hr:administrative a hr:Domain ;
+    hr:hasName "Administrative" ;
+    hr:hasDescription "Expertise in healthcare administration, policy, and management" ;
+    hr:hasKeyword "administration", "management", "policy", "governance", "operations" .
+
+hr:business a hr:Domain ;
+    hr:hasName "Business" ;
+    hr:hasDescription "Expertise in business models, market analysis, and commercialization" ;
+    hr:hasKeyword "business", "market", "commercialization", "monetization", "startup", "entrepreneur" .
+
+hr:design a hr:Domain ;
+    hr:hasName "Design" ;
+    hr:hasDescription "Expertise in user interface, user experience, and visual design" ;
+    hr:hasKeyword "design", "UI", "UX", "visual", "graphic", "user interface", "user experience" .
+
+hr:user_experience a hr:Domain ;
+    hr:hasName "User Experience" ;
+    hr:hasDescription "Expertise in how users interact with products and services" ;
+    hr:hasKeyword "user", "experience", "usability", "user testing", "user research", "human-computer interaction" .
+
+# Project types
+hr:software a hr:ProjectType ;
+    hr:hasName "Software" ;
+    hr:hasDescription "Projects primarily focused on software solutions" ;
+    hr:hasKeyword "app", "application", "software", "platform", "digital", "mobile", "web" .
+
+hr:hardware a hr:ProjectType ;
+    hr:hasName "Hardware" ;
+    hr:hasDescription "Projects involving physical devices or hardware components" ;
+    hr:hasKeyword "device", "hardware", "physical", "wearable", "sensor", "equipment" .
+
+hr:data a hr:ProjectType ;
+    hr:hasName "Data" ;
+    hr:hasDescription "Projects centered around data collection, analysis, or visualization" ;
+    hr:hasKeyword "data", "analytics", "visualization", "dashboard", "metrics", "statistics" .
+
+hr:process a hr:ProjectType ;
+    hr:hasName "Process" ;
+    hr:hasDescription "Projects focused on improving workflows or processes" ;
+    hr:hasKeyword "process", "workflow", "procedure", "protocol", "method", "system" .
+
+hr:service a hr:ProjectType ;
+    hr:hasName "Service" ;
+    hr:hasDescription "Projects creating or improving service delivery" ;
+    hr:hasKeyword "service", "delivery", "care", "support", "assistance", "help" .
+
+# Impact dimensions
+hr:technical_feasibility a hr:ImpactDimension ;
+    hr:hasName "Technical Feasibility" ;
+    hr:hasDescription "How technically feasible is the project to implement" ;
+    hr:hasScaleValue "1", "Extremely difficult or impossible with current technology" ;
+    hr:hasScaleValue "2", "Substantial technical challenges" ;
+    hr:hasScaleValue "3", "Moderate technical challenges" ;
+    hr:hasScaleValue "4", "Few technical challenges" ;
+    hr:hasScaleValue "5", "Easily implementable with existing technology" .
+
+hr:innovation a hr:ImpactDimension ;
+    hr:hasName "Innovation" ;
+    hr:hasDescription "How innovative or novel is the approach" ;
+    hr:hasScaleValue "1", "Not innovative, duplicates existing solutions" ;
+    hr:hasScaleValue "2", "Minor improvements to existing approaches" ;
+    hr:hasScaleValue "3", "Moderate innovation with some novel aspects" ;
+    hr:hasScaleValue "4", "Significantly innovative approach" ;
+    hr:hasScaleValue "5", "Groundbreaking, completely novel approach" .
+
+hr:impact a hr:ImpactDimension ;
+    hr:hasName "Impact" ;
+    hr:hasDescription "Potential impact on the target problem or domain" ;
+    hr:hasScaleValue "1", "Minimal or no impact" ;
+    hr:hasScaleValue "2", "Limited impact" ;
+    hr:hasScaleValue "3", "Moderate impact" ;
+    hr:hasScaleValue "4", "Significant impact" ;
+    hr:hasScaleValue "5", "Transformative impact" .
+
+hr:implementation_complexity a hr:ImpactDimension ;
+    hr:hasName "Implementation Complexity" ;
+    hr:hasDescription "Complexity of implementing the solution in practice" ;
+    hr:hasScaleValue "1", "Extremely complex implementation" ;
+    hr:hasScaleValue "2", "Highly complex implementation" ;
+    hr:hasScaleValue "3", "Moderately complex implementation" ;
+    hr:hasScaleValue "4", "Relatively simple implementation" ;
+    hr:hasScaleValue "5", "Very straightforward implementation" .
+
+hr:scalability a hr:ImpactDimension ;
+    hr:hasName "Scalability" ;
+    hr:hasDescription "Ability to scale to wider implementation" ;
+    hr:hasScaleValue "1", "Not scalable beyond initial context" ;
+    hr:hasScaleValue "2", "Limited scalability" ;
+    hr:hasScaleValue "3", "Moderately scalable" ;
+    hr:hasScaleValue "4", "Highly scalable" ;
+    hr:hasScaleValue "5", "Extremely scalable with minimal effort" .
+
+hr:return_on_investment a hr:ImpactDimension ;
+    hr:hasName "Return on Investment" ;
+    hr:hasDescription "Expected return relative to investment required" ;
+    hr:hasScaleValue "1", "Poor ROI, costs greatly exceed benefits" ;
+    hr:hasScaleValue "2", "Limited ROI, costs somewhat exceed benefits" ;
+    hr:hasScaleValue "3", "Moderate ROI, benefits roughly equal costs" ;
+    hr:hasScaleValue "4", "Good ROI, benefits exceed costs" ;
+    hr:hasScaleValue "5", "Excellent ROI, benefits greatly exceed costs" .
+
+# Expertise levels
+hr:beginner a hr:ExpertiseLevel ;
+    hr:hasName "Beginner" ;
+    hr:hasDescription "Basic understanding of the domain" ;
+    hr:hasConfidenceRangeMin 0 ;
+    hr:hasConfidenceRangeMax 40 .
+
+hr:skilled a hr:ExpertiseLevel ;
+    hr:hasName "Skilled" ;
+    hr:hasDescription "Practical experience and good understanding of the domain" ;
+    hr:hasConfidenceRangeMin 41 ;
+    hr:hasConfidenceRangeMax 70 .
+
+hr:talented a hr:ExpertiseLevel ;
+    hr:hasName "Talented" ;
+    hr:hasDescription "Deep understanding and significant experience in the domain" ;
+    hr:hasConfidenceRangeMin 71 ;
+    hr:hasConfidenceRangeMax 85 .
+
+hr:seasoned a hr:ExpertiseLevel ;
+    hr:hasName "Seasoned" ;
+    hr:hasDescription "Extensive experience and comprehensive knowledge of the domain" ;
+    hr:hasConfidenceRangeMin 86 ;
+    hr:hasConfidenceRangeMax 95 .
+
+hr:expert a hr:ExpertiseLevel ;
+    hr:hasName "Expert" ;
+    hr:hasDescription "Top-level expertise with mastery of the domain" ;
+    hr:hasConfidenceRangeMin 96 ;
+    hr:hasConfidenceRangeMax 100 .
+
+# Review dimensions
+hr:technical hr:hasRelevantDimension hr:technical_feasibility .
+hr:technical hr:hasRelevantDimension hr:implementation_complexity .
+hr:technical hr:hasRelevantDimension hr:scalability .
+hr:technical hr:hasRelevantDimension hr:innovation .
+
+hr:clinical hr:hasRelevantDimension hr:impact .
+hr:clinical hr:hasRelevantDimension hr:implementation_complexity .
+hr:clinical hr:hasRelevantDimension hr:technical_feasibility .
+
+hr:administrative hr:hasRelevantDimension hr:implementation_complexity .
+hr:administrative hr:hasRelevantDimension hr:scalability .
+hr:administrative hr:hasRelevantDimension hr:return_on_investment .
+
+hr:business hr:hasRelevantDimension hr:return_on_investment .
+hr:business hr:hasRelevantDimension hr:scalability .
+hr:business hr:hasRelevantDimension hr:impact .
+
+hr:design hr:hasRelevantDimension hr:innovation .
+hr:design hr:hasRelevantDimension hr:impact .
+hr:design hr:hasRelevantDimension hr:implementation_complexity .
+
+hr:user_experience hr:hasRelevantDimension hr:impact .
+hr:user_experience hr:hasRelevantDimension hr:implementation_complexity .
+hr:user_experience hr:hasRelevantDimension hr:innovation .
