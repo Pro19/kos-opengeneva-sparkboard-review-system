@@ -154,7 +154,7 @@ def _call_ollama_api(prompt: str) -> str:
         raise Exception(f"Ollama API error: {response.status_code} - {response.text}")
     
 def _call_groq_api(prompt: str) -> str:
-    """Call the Groq API to generate a response."""
+    """Call the Groq API to generate a response with rate limit handling."""
     config = LLM_CONFIG.get("groq", {})
     api_key = config.get("api_key")
     base_url = config.get("base_url", "https://api.groq.com/openai/v1")
@@ -173,19 +173,48 @@ def _call_groq_api(prompt: str) -> str:
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": max_tokens
     }
+
+    # Initial backoff in seconds (will increase exponentially)
+    backoff = 1
+    max_backoff = 60
+    max_attempts = 5
     
-    response = requests.post(
-        f"{base_url}/chat/completions",
-        headers=headers,
-        json=payload,
-        timeout=60  # Longer timeout for Groq
-    )
+    for attempt in range(max_attempts):
+        response = requests.post(
+            f"{base_url}/chat/completions",
+            headers=headers,
+            json=payload,
+            timeout=60
+        )
+        
+        if response.status_code == 200:
+            return response.json()["choices"][0]["message"]["content"]
+        elif response.status_code == 429:
+            # Rate limit hit - extract wait time if available
+            wait_time = backoff
+            try:
+                error_data = response.json().get("error", {})
+                error_msg = error_data.get("message", "")
+                # Try to extract wait time from message
+                import re
+                wait_match = re.search(r'try again in (\d+\.?\d*)s', error_msg)
+                if wait_match:
+                    wait_time = float(wait_match.group(1)) + 0.5  # Add a small buffer
+            except:
+                pass
+                
+            logger.warning(f"Rate limit hit. Waiting {wait_time}s before retry (attempt {attempt+1}/{max_attempts})")
+            time.sleep(wait_time)
+            
+            # Increase backoff for next attempt
+            backoff = min(backoff * 2, max_backoff)
+        else:
+            logger.error(f"Groq API error: {response.status_code} - {response.text}")
+            raise Exception(f"Groq API error: {response.status_code} - {response.text}")
     
-    if response.status_code == 200:
-        return response.json()["choices"][0]["message"]["content"]
-    else:
-        logger.error(f"Groq API error: {response.status_code} - {response.text}")
-        raise Exception(f"Groq API error: {response.status_code} - {response.text}")
+    # If we exhausted all attempts
+    logger.error(f"Failed after {max_attempts} attempts due to rate limiting")
+    raise Exception(f"Groq API rate limits exceeded after {max_attempts} attempts with backoff")
 
 def generate_artificial_review(project_description: str, domain: str, ontology: Any) -> Dict[str, Any]:
     """
