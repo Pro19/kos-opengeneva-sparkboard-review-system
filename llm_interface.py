@@ -30,6 +30,8 @@ def generate_llm_response(prompt: str, provider: str = None) -> str:
                 response = _call_chatgpt_api(prompt)
             elif provider.lower() == "ollama":
                 response = _call_ollama_api(prompt)
+            elif provider.lower() == "grok":
+                response = _call_grok_api(prompt)
             else:
                 raise ValueError(f"Unsupported LLM provider: {provider}")
                 
@@ -150,6 +152,40 @@ def _call_ollama_api(prompt: str) -> str:
     else:
         logger.error(f"Ollama API error: {response.status_code} - {response.text}")
         raise Exception(f"Ollama API error: {response.status_code} - {response.text}")
+    
+def _call_grok_api(prompt: str) -> str:
+    """Call the Grok API to generate a response."""
+    config = LLM_CONFIG.get("grok", {})
+    api_key = config.get("api_key")
+    base_url = config.get("base_url", "https://api.grok.ai/v1")
+    model = config.get("model", "grok-2")
+    max_tokens = config.get("max_tokens", 1000)
+    
+    logger.info(f"Calling Grok API with model {model}...")
+    
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "model": model,
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": max_tokens
+    }
+    
+    response = requests.post(
+        f"{base_url}/chat/completions",
+        headers=headers,
+        json=payload,
+        timeout=45  # Slightly longer timeout for Grok
+    )
+    
+    if response.status_code == 200:
+        return response.json()["choices"][0]["message"]["content"]
+    else:
+        logger.error(f"Grok API error: {response.status_code} - {response.text}")
+        raise Exception(f"Grok API error: {response.status_code} - {response.text}")
 
 def generate_artificial_review(project_description: str, domain: str, ontology: Any) -> Dict[str, Any]:
     """

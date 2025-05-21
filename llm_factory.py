@@ -123,15 +123,37 @@ class LLMFactory:
         
         return response
     
+    def _get_grok_response(self, prompt: str, model: str = None, max_tokens: int = None) -> str:
+        """Get a response from Grok API."""
+        config = self.config.get("grok", {})
+        if model:
+            config["model"] = model
+        if max_tokens:
+            config["max_tokens"] = max_tokens
+        
+        # Store original config
+        orig_config = dict(self.config.get("grok", {}))
+        
+        # Update config temporarily
+        self.config["grok"] = config
+        
+        # Get response
+        response = _call_grok_api(prompt)
+        
+        # Restore original config
+        self.config["grok"] = orig_config
+        
+        return response
+    
     def set_default_provider(self, provider: str) -> None:
         """
         Set the default LLM provider.
         
         Args:
-            provider: The provider to set as default ("claude", "chatgpt", or "ollama")
+            provider: The provider to set as default ("claude", "chatgpt", "ollama", or "grok")
         """
-        if provider not in ["claude", "chatgpt", "ollama"]:
-            raise ValueError(f"Invalid provider: {provider}. Choose from: claude, chatgpt, ollama")
+        if provider not in ["claude", "chatgpt", "ollama", "grok"]:
+            raise ValueError(f"Invalid provider: {provider}. Choose from: claude, chatgpt, ollama, grok")
         
         self.default_provider = provider
     
@@ -166,6 +188,9 @@ class LLMFactory:
         
         elif provider == "chatgpt":
             return ["gpt-4-turbo", "gpt-4", "gpt-3.5-turbo"]
+        
+        elif provider == "grok":
+            return ["grok-2", "grok-1.5"]
         
         return []
 

@@ -13,10 +13,10 @@ def update_config_provider(provider: str) -> None:
     Update the default LLM provider in the config file.
     
     Args:
-        provider: The provider to set as default ("claude", "chatgpt", or "ollama")
+        provider: The provider to set as default ("claude", "chatgpt", "ollama", or "grok")
     """
-    if provider not in ["claude", "chatgpt", "ollama"]:
-        print(f"Error: Invalid provider '{provider}'. Choose from: claude, chatgpt, ollama")
+    if provider not in ["claude", "chatgpt", "ollama", "grok"]:
+        print(f"Error: Invalid provider '{provider}'. Choose from: claude, chatgpt, ollama, grok")
         return
     
     # Update the config file
@@ -48,8 +48,8 @@ def test_provider(provider: str, prompt: str = None) -> None:
         provider: The provider to test ("claude", "chatgpt", or "ollama")
         prompt: Optional custom prompt to use
     """
-    if provider not in ["claude", "chatgpt", "ollama"]:
-        print(f"Error: Invalid provider '{provider}'. Choose from: claude, chatgpt, ollama")
+    if provider not in ["claude", "chatgpt", "ollama", "grok"]:
+        print(f"Error: Invalid provider '{provider}'. Choose from: claude, chatgpt, ollama, grok")
         return
     
     # Use default prompt if none provided
@@ -96,12 +96,12 @@ def main() -> None:
     
     # Command to set default provider
     set_parser = subparsers.add_parser("set", help="Set default LLM provider")
-    set_parser.add_argument("provider", choices=["claude", "chatgpt", "ollama"], 
-                           help="Provider to set as default")
-    
+    set_parser.add_argument("provider", choices=["claude", "chatgpt", "ollama", "grok"], 
+                        help="Provider to set as default")
+
     # Command to test a provider
     test_parser = subparsers.add_parser("test", help="Test an LLM provider")
-    test_parser.add_argument("provider", choices=["claude", "chatgpt", "ollama"], 
+    test_parser.add_argument("provider", choices=["claude", "chatgpt", "ollama", "grok"], 
                             help="Provider to test")
     test_parser.add_argument("--prompt", help="Custom prompt to use for testing")
     

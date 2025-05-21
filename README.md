@@ -57,6 +57,13 @@ LLM_CONFIG = {
         "api_key": "YOUR_OPENAI_API_KEY",
         "model": "gpt-4-turbo", 
         "max_tokens": 1000
+    },
+
+    "grok": {
+        "api_key": "YOUR_GROK_API_KEY",
+        "base_url": "https://api.grok.ai/v1",
+        "model": "grok-2",
+        "max_tokens": 1000
     }
 }
 ```

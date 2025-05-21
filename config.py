@@ -39,6 +39,13 @@ LLM_CONFIG = {
         "base_url": "http://localhost:11434",  # Default Ollama API URL
         "model": "deepseek-r1:8b",  # Choose your available model (llama3, mistral, etc.)
         "max_tokens": 1000
+    },
+
+    "grok": {
+        "api_key": "YOUR_GROK_API_KEY",
+        "base_url": "https://api.grok.ai/v1",  # Grok API URL
+        "model": "grok-2",  # Default Grok model
+        "max_tokens": 1000
     }
 }
 
