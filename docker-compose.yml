@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  review-system:
+    network_mode: host
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./results:/app/results
+      - ./output:/app/output
+      - ./logs:/app/logs
+    environment:
+      - PYTHONUNBUFFERED=1
+      - OLLAMA_MODEL=deepseek-coder:1.5b
+
+    command: --project ai-health-assistant
