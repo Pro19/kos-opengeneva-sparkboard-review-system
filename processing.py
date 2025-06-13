@@ -2,7 +2,6 @@
 Background processing for project review analysis
 """
 
-import asyncio
 import uuid
 from datetime import datetime
 from typing import Dict, Any, List
@@ -49,7 +48,7 @@ def update_job_progress(job_id: str, step: str, completed: int, errors: List[str
                 job.status = "processing"
             db.commit()
 
-async def process_project_reviews(project_id: str, job_id: str, options: Dict[str, Any]):
+def process_project_reviews(project_id: str, job_id: str, options: Dict[str, Any]):
     """
     Process reviews for a project using the ontology-driven analysis system.
     This runs as a background task.

@@ -152,13 +152,26 @@ class ProcessingStatusResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     
     project_id: str
-    processing_job_id: str = Field(alias="job_id")
+    processing_job_id: str
     status: str
     started_at: datetime
     completed_at: Optional[datetime] = None
     progress: Dict[str, Any]
     statistics: Optional[Dict[str, int]] = None
     errors: List[str] = []
+    
+    @classmethod
+    def from_orm(cls, obj):
+        return cls(
+            project_id=obj.project_id,
+            processing_job_id=obj.job_id,  # Map job_id to processing_job_id
+            status=obj.status,
+            started_at=obj.started_at,
+            completed_at=obj.completed_at,
+            progress=obj.progress,
+            statistics=None,
+            errors=obj.errors or []
+        )
 
 class FeedbackResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)

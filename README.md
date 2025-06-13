@@ -1,157 +1,229 @@
-# Ontology-Driven AI for Multi-Perspective Peer Review
+# REST API for Ontology-Driven Hackathon Review System
 
-This repository contains an implementation of an ontology-driven AI system for analyzing hackathon project reviews from multiple perspectives, with flexible LLM provider support.
+This document describes the REST API implementation for the hackathon review system. The API replaces the file-based input system with a modern REST interface.
+
+## Features
+
+- **RESTful API** with comprehensive endpoints for project and review management
+- **SQLite database** for persistent storage
+- **Asynchronous processing** for review analysis
+- **Multiple API documentation formats**:
+  - Swagger UI
+  - ReDoc
+  - Scalar (modern, interactive documentation)
+  - OpenAPI JSON specification
+- **Background task processing** for long-running analysis
+- **Idempotent operations** where appropriate
 
 ## Installation
 
-1. Clone this repository:
+1. Install the additional API dependencies:
    ```bash
-   git clone https://github.com/your-username/hackathon-review-system.git
-   cd hackathon-review-system
+   pip install -r requirements_api.txt
    ```
 
-2. Create and activate a virtual environment (recommended):
+2. Run the API server:
    ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows, use: venv\Scripts\activate
+   python run_api.py
    ```
 
-3. Install required dependencies:
+   Or with custom settings:
    ```bash
-   pip install scikit-learn numpy requests
+   API_HOST=0.0.0.0 API_PORT=8080 python run_api.py
    ```
 
-4. (Optional) Install Ollama for local LLM inference:
-   - Visit [Ollama's website](https://ollama.ai/) to download and install
-   - Pull a model: `ollama pull llama3` or `ollama pull mistral`
+## API Documentation
 
-## LLM Provider Support
+Once the server is running, you can access the interactive API documentation at:
 
-The system now supports multiple LLM providers:
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+- **Scalar**: http://localhost:8000/scalar (recommended - modern UI)
+- **OpenAPI JSON**: http://localhost:8000/openapi.json
 
-1. **Ollama** (default): Run open-source LLMs locally
-2. **Claude**: Use Anthropic's Claude models via API
-3. **ChatGPT**: Use OpenAI's GPT models via API
+## Quick Start Guide
 
-### Configuring LLM Providers
+### 1. Create a Project
 
-You can configure which LLM provider to use in `config.py`:
+```bash
+curl -X POST "http://localhost:8000/api/v1/projects" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "hackathon_id": "MedTech2025",
+    "name": "AI Health Assistant",
+    "description": "An AI-powered health assistant for chronic disease management...",
+    "work_done": "We have developed a functional prototype..."
+  }'
+```
 
-```python
-LLM_CONFIG = {
-    "provider": "ollama",  # Choose between "claude", "chatgpt", or "ollama"
-    
-    "ollama": {
-        "base_url": "http://localhost:11434",  # Default Ollama API URL
-        "model": "llama3",  # Choose your available model
-        "max_tokens": 1000
-    },
-    
-    "claude": {
-        "api_key": "YOUR_ANTHROPIC_API_KEY",
-        "model": "claude-3-opus-20240229",
-        "max_tokens": 1000
-    },
-    
-    "chatgpt": {
-        "api_key": "YOUR_OPENAI_API_KEY",
-        "model": "gpt-4-turbo", 
-        "max_tokens": 1000
-    },
+### 2. Submit Reviews
 
-    "groq": {
-        "api_key": "YOUR_GROQ_API_KEY",
-        "base_url": "https://api.groq.com/openai",
-        "model": "llama3-70b-8192",
-        "max_tokens": 1000
+```bash
+curl -X POST "http://localhost:8000/api/v1/projects/{project_id}/reviews" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reviewer_name": "Dr. Sarah Johnson",
+    "text_review": "This project shows great promise...",
+    "confidence_score": 95,
+    "links": {
+      "linkedin": "https://linkedin.com/in/sarahjohnson"
     }
+  }'
+```
+
+### 3. Process Reviews
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/projects/{project_id}/process" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "generate_artificial_reviews": true,
+    "force_reprocess": false
+  }'
+```
+
+### 4. Check Processing Status
+
+```bash
+curl "http://localhost:8000/api/v1/projects/{project_id}/status"
+```
+
+### 5. Get Feedback Report
+
+```bash
+curl "http://localhost:8000/api/v1/projects/{project_id}/feedback"
+```
+
+## API Endpoints
+
+### Project Management
+
+- `POST /api/v1/projects` - Create a new project
+- `GET /api/v1/projects/{project_id}` - Get project details
+- `PUT /api/v1/projects/{project_id}` - Update project information
+
+### Review Management
+
+- `POST /api/v1/projects/{project_id}/reviews` - Submit a review
+- `GET /api/v1/projects/{project_id}/reviews` - List reviews with pagination
+- `GET /api/v1/projects/{project_id}/reviews/{review_id}` - Get specific review
+
+### Processing
+
+- `POST /api/v1/projects/{project_id}/process` - Start review analysis (idempotent)
+- `GET /api/v1/projects/{project_id}/status` - Get processing status
+
+### Results
+
+- `GET /api/v1/projects/{project_id}/feedback` - Get feedback report
+- `GET /api/v1/projects/{project_id}/feedback/visualization` - Get visualization data
+
+## Database Schema
+
+The API uses SQLite with the following main tables:
+
+- **projects**: Stores project information
+- **reviews**: Stores submitted reviews
+- **processing_jobs**: Tracks background processing jobs
+- **feedback_reports**: Stores generated feedback reports
+
+## Processing Workflow
+
+1. **Submit Project**: Create a project via the API
+2. **Submit Reviews**: Multiple reviewers submit their reviews
+3. **Start Processing**: Trigger the analysis process
+4. **Background Processing**:
+   - Reviews are analyzed and classified
+   - Reviewer expertise is determined
+   - Artificial reviews are generated for missing domains
+   - Feedback scores are calculated
+   - Final report is generated
+5. **Retrieve Results**: Get the feedback report and visualization data
+
+## Configuration
+
+The system uses the existing configuration in `config.py`. Key settings:
+
+- **LLM Provider**: Configure which LLM to use (Ollama, Claude, ChatGPT, Grok)
+- **Review Thresholds**: Minimum confidence scores and relevance thresholds
+- **Core Domains**: Domains to ensure coverage in reviews
+
+## Error Handling
+
+The API provides detailed error responses:
+
+```json
+{
+  "detail": "Error message describing what went wrong"
 }
 ```
 
-### LLM Provider CLI Utility
+Common HTTP status codes:
+- `200`: Success
+- `201`: Created
+- `202`: Accepted (for async operations)
+- `400`: Bad Request
+- `404`: Not Found
+- `500`: Internal Server Error
 
-A command-line utility is included to manage and test different LLM providers:
+## Async Processing
 
+Long-running tasks (like review analysis) are processed asynchronously:
+
+1. The `/process` endpoint returns immediately with a `202 Accepted` status
+2. Check the status using the `/status` endpoint
+3. Once completed, retrieve results from `/feedback`
+
+## Development
+
+For development with auto-reload:
 ```bash
-# Show current configuration
-python llm_cli.py config
-
-# Set default provider
-python llm_cli.py set ollama
-
-# Test a provider
-python llm_cli.py test ollama
+API_RELOAD=true python run_api.py
 ```
 
-## Running the System
+## Testing
 
-### Testing with Sample Projects
-
-To run the system with the included test projects:
-
-```bash
-python run_test.py
-```
-
-This script will:
-1. Set up the test environment with sample projects
-2. Update the configuration to use the test projects directory
-3. Run the main program and generate feedback reports in the `output` directory
-
-### Regular Usage
-
-For regular usage with your own projects:
-
-```bash
-python main.py
-```
-
-Additional options:
-- `--project PROJECT_ID`: Process a specific project
-- `--output OUTPUT_DIR`: Specify output directory
-- `--new-ontology`: Create a new ontology instead of loading existing one
-
-Example:
-```bash
-python main.py --project ai-health-assistant --output results
-```
-
-## Advanced Usage: LLM Factory
-
-For more advanced control over LLM interactions, you can use the `LLMFactory` class:
-
+Example test script:
 ```python
-from llm_factory import LLMFactory
+import httpx
+import asyncio
 
-# Create an LLM factory
-llm = LLMFactory()
+async def test_api():
+    async with httpx.AsyncClient() as client:
+        # Create project
+        response = await client.post(
+            "http://localhost:8000/api/v1/projects",
+            json={
+                "hackathon_id": "Test2025",
+                "name": "Test Project",
+                "description": "A test project description...",
+                "work_done": "Initial prototype completed..."
+            }
+        )
+        project = response.json()
+        print(f"Created project: {project['project_id']}")
+        
+        # Submit review
+        response = await client.post(
+            f"http://localhost:8000/api/v1/projects/{project['project_id']}/reviews",
+            json={
+                "reviewer_name": "Test Reviewer",
+                "text_review": "This is a test review...",
+                "confidence_score": 85
+            }
+        )
+        print(f"Submitted review: {response.json()['review_id']}")
 
-# Get a response using the default provider
-response = llm.get_response("What is ontology in computer science?")
-
-# Get a response from a specific provider
-response = llm.get_response(
-    "Explain machine learning",
-    provider="ollama",
-    model="llama3",
-    max_tokens=500
-)
-
-# Switch the default provider
-llm.set_default_provider("claude")
+asyncio.run(test_api())
 ```
 
-## System Features
+## Migration from File-Based System
 
-- **Flexible LLM backend**: Use local models via Ollama or cloud APIs
-- **Ontology-driven analysis**: Structured representation of domains, expertise, and feedback dimensions
-- **Reviewer classification**: Identification of reviewer domain expertise and relevance
-- **Multi-perspective feedback**: Analysis of projects from diverse stakeholder viewpoints
-- **Artificial review generation**: AI-generated reviews for missing domain perspectives
-- **Comprehensive reports**: Detailed feedback with multi-dimensional scoring
+To migrate existing projects from the file-based system:
 
-## Notes
+1. Use the existing `load_all_projects()` function to read projects
+2. Submit them via the API
+3. Submit their reviews via the API
+4. Trigger processing
 
-- When using Ollama, ensure the Ollama service is running locally
-- API keys for Claude and ChatGPT should be stored securely (not hardcoded in the config file)
-- The system assumes all reviews follow the specified format
+The processing engine remains the same - only the input/output mechanism has changed.
