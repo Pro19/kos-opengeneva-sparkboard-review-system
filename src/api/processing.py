@@ -6,15 +6,15 @@ import uuid
 from datetime import datetime
 from typing import Dict, Any, List
 
-from database import get_db_context
-from models import Project, Review, ProcessingJob, FeedbackReport
-from ontology import Ontology
-from reviewer import ReviewerProfile
-from review import ReviewAnalyzer
-from feedback import FeedbackGenerator
-from llm_interface import analyze_review_sentiment, generate_artificial_review, generate_llm_response
-from logging_utils import logger
-from config import LLM_PROMPTS
+from src.infrastructure.database import get_db_context
+from src.api.models import Project, Review, ProcessingJob, FeedbackReport
+from src.core.ontology import Ontology
+from src.core.reviewer import ReviewerProfile
+from src.core.review import ReviewAnalyzer
+from src.core.feedback import FeedbackGenerator
+from src.infrastructure.llm_interface import analyze_review_sentiment, generate_artificial_review, generate_llm_response
+from src.infrastructure.logging_utils import logger
+from src.infrastructure.config import LLM_PROMPTS
 
 # Processing steps
 PROCESSING_STEPS = [

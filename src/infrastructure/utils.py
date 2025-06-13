@@ -8,7 +8,8 @@ import json
 from typing import Dict, List, Any, Tuple, Optional
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-from logging_utils import logger
+
+from src.infrastructure.logging_utils import logger
 
 def parse_markdown_file(file_path: str) -> Dict[str, str]:
     """

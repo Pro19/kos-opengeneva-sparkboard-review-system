@@ -5,11 +5,12 @@ SQLAlchemy models and Pydantic schemas for the API
 from sqlalchemy import Column, String, Integer, Float, Text, DateTime, Boolean, JSON, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from database import Base
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 from enum import Enum
+
+from src.infrastructure.database import Base
 
 # SQLAlchemy Models
 

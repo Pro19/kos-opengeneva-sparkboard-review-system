@@ -5,9 +5,10 @@ Ontology management and generation for hackathon review system.
 import os
 import json
 from typing import Dict, List, Any, Optional
-from config import PATHS, CORE_DOMAINS
-from llm_interface import generate_llm_response
-from logging_utils import logger
+
+from src.infrastructure.config import PATHS, CORE_DOMAINS
+from src.infrastructure.llm_interface import generate_llm_response
+from src.infrastructure.logging_utils import logger
 
 class Ontology:
     """

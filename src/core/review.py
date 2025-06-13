@@ -4,11 +4,12 @@ Review analysis and filtering for hackathon review system.
 
 from typing import Dict, List, Any, Optional
 from collections import defaultdict
-from config import CORE_DOMAINS
-from llm_interface import analyze_review_sentiment, generate_artificial_review
 import time
-from logging_utils import logger
-from config import LLM_CONFIG, LLM_PROMPTS
+
+from src.infrastructure.config import CORE_DOMAINS
+from src.infrastructure.llm_interface import analyze_review_sentiment, generate_artificial_review
+from src.infrastructure.logging_utils import logger
+from src.infrastructure.config import LLM_CONFIG, LLM_PROMPTS
 
 class ReviewAnalyzer:
     """Class for analyzing and processing project reviews."""

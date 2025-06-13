@@ -5,8 +5,9 @@ Project data structures and parsing for hackathon review system.
 import os
 import glob
 from typing import Dict, List, Any, Optional
-from utils import parse_markdown_file
-from config import PATHS
+
+from src.infrastructure.utils import parse_markdown_file
+from src.infrastructure.config import PATHS
 
 class Project:
     """Class representing a hackathon project."""

@@ -6,9 +6,10 @@ import time
 import requests
 import json
 from typing import Dict, List, Any, Optional
-from logging_utils import logger
-from config import LLM_CONFIG
-from utils import remove_thinking_tags
+
+from src.infrastructure.logging_utils import logger
+from src.infrastructure.config import LLM_CONFIG
+from src.infrastructure.utils import remove_thinking_tags
 
 def generate_llm_response(prompt: str, provider: str = None) -> str:
     """Generate a response using a language model with retry mechanism."""

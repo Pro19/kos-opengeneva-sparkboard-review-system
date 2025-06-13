@@ -7,14 +7,13 @@ import argparse
 import json
 from typing import Dict, List, Any, Optional
 
-from ontology import Ontology
-from project import Project, load_all_projects
-from reviewer import ReviewerProfile
-from review import ReviewAnalyzer
-from feedback import FeedbackGenerator
-from config import PATHS
-from config import SETTINGS
-from logging_utils import logger
+from src.core.ontology import Ontology
+from src.core.project import Project, load_all_projects
+from src.core.reviewer import ReviewerProfile
+from src.core.review import ReviewAnalyzer
+from src.core.feedback import FeedbackGenerator
+from src.infrastructure.config import PATHS, SETTINGS
+from src.infrastructure.logging_utils import logger
 
 def check_requirements():
     """Check for required dependencies and warn about optional ones."""

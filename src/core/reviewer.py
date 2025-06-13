@@ -5,9 +5,10 @@ Reviewer classification and profiling for hackathon review system.
 import os
 import re
 from typing import Dict, List, Any, Optional
-from utils import extract_links, calculate_text_similarity
-from config import REVIEW_THRESHOLDS
-from llm_interface import classify_reviewer_domain
+
+from src.infrastructure.utils import extract_links, calculate_text_similarity
+from src.infrastructure.config import REVIEW_THRESHOLDS
+from src.infrastructure.llm_interface import classify_reviewer_domain
 
 class ReviewerProfile:
     """Class for managing reviewer profiles and expertise assessment."""

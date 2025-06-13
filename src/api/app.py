@@ -11,18 +11,17 @@ from datetime import datetime
 import uuid
 import asyncio
 from enum import Enum
-
-from database import init_db, get_db
-from fastapi import Depends
 from sqlalchemy.orm import Session
-from models import (
+
+from src.infrastructure.database import init_db, get_db
+from src.api.models import (
     Project, Review, ProcessingJob, FeedbackReport,
     ProjectCreate, ProjectUpdate, ReviewCreate,
     ProcessOptions, ProjectResponse, ReviewResponse,
     ProcessingStatusResponse, FeedbackResponse, VisualizationData
 )
-from processing import process_project_reviews
-from scalar_fastapi import get_scalar_api_reference
+from src.api.processing import process_project_reviews
+from src.api.scalar_fastapi import get_scalar_api_reference
 
 # Initialize database on startup
 @asynccontextmanager

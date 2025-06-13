@@ -8,6 +8,13 @@ import sys
 import uvicorn
 from pathlib import Path
 
+# Add the src directory to Python path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
+# Then import the app
+from src.api.app import app
+
 def main():
     """Run the API server"""
     # Add the project root to Python path

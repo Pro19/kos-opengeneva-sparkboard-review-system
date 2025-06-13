@@ -5,8 +5,9 @@ CLI utility for selecting and testing different LLM providers.
 import argparse
 import json
 import sys
-from config import LLM_CONFIG
-from llm_interface import generate_llm_response
+
+from src.infrastructure.config import LLM_CONFIG
+from src.infrastructure.llm_interface import generate_llm_response
 
 def update_config_provider(provider: str) -> None:
     """

@@ -5,10 +5,10 @@ Feedback generation for hackathon review system.
 import os
 from typing import Dict, List, Any, Optional
 import json
-from config import FEEDBACK_SETTINGS
 import matplotlib.pyplot as plt
 import numpy as np
-from utils import remove_thinking_tags
+from src.infrastructure.config import FEEDBACK_SETTINGS
+from src.infrastructure.utils import remove_thinking_tags
 
 class FeedbackGenerator:
     """Class for generating final feedback and visualizations."""

@@ -3,7 +3,8 @@ import logging
 import os
 import sys
 from typing import Optional
-from config import LOGGING_CONFIG
+
+from src.infrastructure.config import LOGGING_CONFIG
 
 def setup_logger(
     name: str = "hackathon_review",
