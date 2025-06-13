@@ -1,229 +1,99 @@
-# REST API for Ontology-Driven Hackathon Review System
+# OpenGeneva Sparkboard: Ontology-Driven AI for Multi-Perspective Peer Review in Hackathons
 
-This document describes the REST API implementation for the hackathon review system. The API replaces the file-based input system with a modern REST interface.
+## Team Information
 
-## Features
+**Course:** D400006 – Knowledge Organization Systems, Université de Genève
 
-- **RESTful API** with comprehensive endpoints for project and review management
-- **SQLite database** for persistent storage
-- **Asynchronous processing** for review analysis
-- **Multiple API documentation formats**:
-  - Swagger UI
-  - ReDoc
-  - Scalar (modern, interactive documentation)
-  - OpenAPI JSON specification
-- **Background task processing** for long-running analysis
-- **Idempotent operations** where appropriate
+**Team Members:**
+- Eisha Tir Raazia
+- Mahidhar Reddy Vaka
+- Oussama Rattazi
+- Pranshu Mishra
 
-## Installation
+## Project Description
 
-1. Install the additional API dependencies:
-   ```bash
-   pip install -r requirements_api.txt
-   ```
+### Overview
 
-2. Run the API server:
-   ```bash
-   python run_api.py
-   ```
+The OpenGeneva Sparkboard is an innovative ontology-driven AI system designed to enhance the depth and utility of peer review systems in hackathon environments. Rather than relying on simplistic ranking scales, our approach leverages structured knowledge representation to capture both reviewer characteristics and feedback dimensions, enabling comprehensive multi-perspective analysis of hackathon projects.
 
-   Or with custom settings:
-   ```bash
-   API_HOST=0.0.0.0 API_PORT=8080 python run_api.py
-   ```
+### State-of-the-Art & Problem Statement
 
-## API Documentation
+Traditional hackathon peer reviews suffer from several limitations:
+- Lack of structure in review processes
+- Poor expertise matching between reviewers and projects
+- Insufficient perspective coverage across different domains
+- Inconsistent evaluation criteria across reviewers
 
-Once the server is running, you can access the interactive API documentation at:
+### Key Features
 
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-- **Scalar**: http://localhost:8000/scalar (recommended - modern UI)
-- **OpenAPI JSON**: http://localhost:8000/openapi.json
+- **Ontological Knowledge Representation:** Structured classification of domains, expertise levels, and evaluation dimensions
+- **Reviewer Expertise Profiling:** Automatic classification of reviewers based on confidence scores and review content
+- **Domain Relevance Scoring:** Intelligent matching between reviewer expertise and project domains
+- **Artificial Review Generation:** AI-generated reviews to fill gaps in domain coverage
+- **Multi-dimensional Evaluation:** Comprehensive scoring across technical feasibility, innovation, impact, scalability, and ROI
+- **Hybrid Human-AI Pipeline:** Combines human expertise with AI augmentation for comprehensive analysis
 
-## Quick Start Guide
+### Ontology & AI Methods Used
 
-### 1. Create a Project
+- **Knowledge Graph Structure:** RDF/TTL-based ontology defining domains, subdomains, expertise levels, and evaluation dimensions
+- **Natural Language Processing:** LLM-based sentiment analysis and review classification
+- **Machine Learning:** Domain classification and relevance scoring using text similarity measures
+- **Multi-Provider LLM Integration:** Support for Claude, ChatGPT, Ollama, and Groq APIs
+- **Confidence-Based Filtering:** Review acceptance based on expertise level and domain relevance thresholds
 
-```bash
-curl -X POST "http://localhost:8000/api/v1/projects" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "hackathon_id": "MedTech2025",
-    "name": "AI Health Assistant",
-    "description": "An AI-powered health assistant for chronic disease management...",
-    "work_done": "We have developed a functional prototype..."
-  }'
-```
+---
 
-### 2. Submit Reviews
+## Installation & Setup
+### Prerequisites
+### Dependencies
+### Setup Instructions
+#### Configure LLM Provider
+#### Run the application (CLI Version):
+#### Run the application (REST API Version):
 
-```bash
-curl -X POST "http://localhost:8000/api/v1/projects/{project_id}/reviews" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "reviewer_name": "Dr. Sarah Johnson",
-    "text_review": "This project shows great promise...",
-    "confidence_score": 95,
-    "links": {
-      "linkedin": "https://linkedin.com/in/sarahjohnson"
-    }
-  }'
-```
+---
 
-### 3. Process Reviews
+## Ontology & Data Structure
 
-```bash
-curl -X POST "http://localhost:8000/api/v1/projects/{project_id}/process" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "generate_artificial_reviews": true,
-    "force_reprocess": false
-  }'
-```
+### Ontology Design
 
-### 4. Check Processing Status
+Our ontology is structured around five core components:
 
-```bash
-curl "http://localhost:8000/api/v1/projects/{project_id}/status"
-```
+1. **Domains (`hr:Domain`)**
 
-### 5. Get Feedback Report
+- Technical: Programming, software engineering, hardware development
+- Clinical: Medical/healthcare expertise, patient care, diagnosis
+- Administrative: Healthcare administration, policy, management
+- Business: Market analysis, commercialization, entrepreneurship
+- Design: UI/UX design, visual design, interaction design
+- User Experience: User research, accessibility, behavior analysis
 
-```bash
-curl "http://localhost:8000/api/v1/projects/{project_id}/feedback"
-```
+2. **Expertise Levels (`hr:ExpertiseLevel`)**
 
-## API Endpoints
+Based on confidence scores (0-100):
+- Beginner (0-40): Basic understanding
+- Skilled (41-70): Practical experience
+- Talented (71-85): Deep understanding
+- Seasoned (86-95): Extensive experience
+- Expert (96-100): Top-level mastery
 
-### Project Management
+3. **Impact Dimensions (`hr:ImpactDimension`)**
 
-- `POST /api/v1/projects` - Create a new project
-- `GET /api/v1/projects/{project_id}` - Get project details
-- `PUT /api/v1/projects/{project_id}` - Update project information
+- Technical Feasibility: Implementation difficulty with current technology
+- Innovation: Novelty and uniqueness of approach
+- Impact: Potential effect on target problem/domain
+- Implementation Complexity: Practical deployment difficulty
+- Scalability: Ability to scale to wider implementation
+- Return on Investment: Expected benefits vs. costs
 
-### Review Management
+4. **Project Types (`hr:ProjectType`)**
 
-- `POST /api/v1/projects/{project_id}/reviews` - Submit a review
-- `GET /api/v1/projects/{project_id}/reviews` - List reviews with pagination
-- `GET /api/v1/projects/{project_id}/reviews/{review_id}` - Get specific review
+Software, Hardware, Data, Process, Service
 
-### Processing
+5. **Review Dimensions Mapping**
 
-- `POST /api/v1/projects/{project_id}/process` - Start review analysis (idempotent)
-- `GET /api/v1/projects/{project_id}/status` - Get processing status
+Each domain has relevant dimensions for focused evaluation:
 
-### Results
-
-- `GET /api/v1/projects/{project_id}/feedback` - Get feedback report
-- `GET /api/v1/projects/{project_id}/feedback/visualization` - Get visualization data
-
-## Database Schema
-
-The API uses SQLite with the following main tables:
-
-- **projects**: Stores project information
-- **reviews**: Stores submitted reviews
-- **processing_jobs**: Tracks background processing jobs
-- **feedback_reports**: Stores generated feedback reports
-
-## Processing Workflow
-
-1. **Submit Project**: Create a project via the API
-2. **Submit Reviews**: Multiple reviewers submit their reviews
-3. **Start Processing**: Trigger the analysis process
-4. **Background Processing**:
-   - Reviews are analyzed and classified
-   - Reviewer expertise is determined
-   - Artificial reviews are generated for missing domains
-   - Feedback scores are calculated
-   - Final report is generated
-5. **Retrieve Results**: Get the feedback report and visualization data
-
-## Configuration
-
-The system uses the existing configuration in `config.py`. Key settings:
-
-- **LLM Provider**: Configure which LLM to use (Ollama, Claude, ChatGPT, Grok)
-- **Review Thresholds**: Minimum confidence scores and relevance thresholds
-- **Core Domains**: Domains to ensure coverage in reviews
-
-## Error Handling
-
-The API provides detailed error responses:
-
-```json
-{
-  "detail": "Error message describing what went wrong"
-}
-```
-
-Common HTTP status codes:
-- `200`: Success
-- `201`: Created
-- `202`: Accepted (for async operations)
-- `400`: Bad Request
-- `404`: Not Found
-- `500`: Internal Server Error
-
-## Async Processing
-
-Long-running tasks (like review analysis) are processed asynchronously:
-
-1. The `/process` endpoint returns immediately with a `202 Accepted` status
-2. Check the status using the `/status` endpoint
-3. Once completed, retrieve results from `/feedback`
-
-## Development
-
-For development with auto-reload:
-```bash
-API_RELOAD=true python run_api.py
-```
-
-## Testing
-
-Example test script:
-```python
-import httpx
-import asyncio
-
-async def test_api():
-    async with httpx.AsyncClient() as client:
-        # Create project
-        response = await client.post(
-            "http://localhost:8000/api/v1/projects",
-            json={
-                "hackathon_id": "Test2025",
-                "name": "Test Project",
-                "description": "A test project description...",
-                "work_done": "Initial prototype completed..."
-            }
-        )
-        project = response.json()
-        print(f"Created project: {project['project_id']}")
-        
-        # Submit review
-        response = await client.post(
-            f"http://localhost:8000/api/v1/projects/{project['project_id']}/reviews",
-            json={
-                "reviewer_name": "Test Reviewer",
-                "text_review": "This is a test review...",
-                "confidence_score": 85
-            }
-        )
-        print(f"Submitted review: {response.json()['review_id']}")
-
-asyncio.run(test_api())
-```
-
-## Migration from File-Based System
-
-To migrate existing projects from the file-based system:
-
-1. Use the existing `load_all_projects()` function to read projects
-2. Submit them via the API
-3. Submit their reviews via the API
-4. Trigger processing
-
-The processing engine remains the same - only the input/output mechanism has changed.
+- Technical → Technical Feasibility, Implementation Complexity, Scalability, Innovation
+- Clinical → Impact, Implementation Complexity, Technical Feasibility
+- Business → ROI, Scalability, Impact
