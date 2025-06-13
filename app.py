@@ -300,6 +300,7 @@ async def start_processing(
     # Start background processing
     background_tasks.add_task(process_project_reviews, project_id, job_id, options.dict())
     
+    # Return the processing status response immediately
     return ProcessingStatusResponse.from_orm(processing_job)
 
 @app.get("/api/v1/projects/{project_id}/status", response_model=ProcessingStatusResponse)
@@ -314,8 +315,6 @@ async def get_processing_status(project_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="No processing job found for this project")
     
     # Add statistics if completed
-    response = ProcessingStatusResponse.from_orm(job)
-    
     if job.status == "completed":
         project = db.query(Project).filter(Project.project_id == project_id).first()
         accepted_reviews = db.query(Review).filter(
@@ -328,13 +327,15 @@ async def get_processing_status(project_id: str, db: Session = Depends(get_db)):
             Review.is_artificial == True
         ).count()
         
+        response = ProcessingStatusResponse.from_orm(job)
         response.statistics = {
             "total_reviews": project.review_count,
             "accepted_reviews": accepted_reviews,
             "artificial_reviews": artificial_reviews
         }
-    
-    return response
+        return response
+    else:
+        return ProcessingStatusResponse.from_orm(job)
 
 # Results APIs
 
