@@ -34,8 +34,8 @@ class FeedbackGenerator:
         Returns:
             Path to the generated report file
         """
-        from logging_utils import logger
-        from config import PATHS
+        from src.infrastructure.logging_utils import logger
+        from src.infrastructure.config import PATHS
         
         # Create output directory if it doesn't exist
         os.makedirs(output_dir, exist_ok=True)

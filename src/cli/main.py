@@ -17,7 +17,7 @@ from src.infrastructure.logging_utils import logger
 
 def check_requirements():
     """Check for required dependencies and warn about optional ones."""
-    from logging_utils import logger
+    from src.infrastructure.logging_utils import logger
     
     # Required dependencies
     required = ["requests", "sklearn"]

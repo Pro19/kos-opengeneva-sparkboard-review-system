@@ -361,8 +361,8 @@ def _calculate_feedback_scores_from_data(reviews_data: List[Dict[str, Any]], ont
 
 def _generate_final_review_from_data(project_info: Dict[str, Any], reviews_data: List[Dict[str, Any]], scores: Dict[str, float]) -> str:
     """Generate final review text based on extracted review data"""
-    from llm_interface import generate_llm_response
-    from config import LLM_PROMPTS
+    from src.infrastructure.llm_interface import generate_llm_response
+    from src.infrastructure.config import LLM_PROMPTS
     
     # Group reviews by domain
     reviews_by_domain = {}

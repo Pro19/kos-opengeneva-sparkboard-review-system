@@ -224,7 +224,7 @@ class ReviewAnalyzer:
         logger.debug(f"Generating final review with prompt: {prompt[:200]}...")
         
         # Call LLM to generate the review
-        from llm_interface import generate_llm_response
+        from src.infrastructure.llm_interface import generate_llm_response
         
         max_retries = LLM_CONFIG.get("max_retries", 3)
         retry_count = 0

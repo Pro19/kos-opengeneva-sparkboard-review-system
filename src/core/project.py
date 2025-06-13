@@ -61,7 +61,7 @@ class Project:
     
     def _load_reviews(self) -> List[Dict[str, Any]]:
         """Load all review files for the project."""
-        from logging_utils import logger
+        from src.infrastructure.logging_utils import logger
         
         reviews = []
         review_files = glob.glob(os.path.join(self.project_dir, "review*.md"))

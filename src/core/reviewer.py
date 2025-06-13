@@ -25,7 +25,7 @@ class ReviewerProfile:
     
     def classify_reviewer(self, reviewer_name: str, review_text: str, confidence_score: int, links: Dict[str, str] = None) -> Dict[str, Any]:
         """Classify a reviewer based on their review and profile information."""
-        from logging_utils import logger
+        from src.infrastructure.logging_utils import logger
         
         # Check if we already have a profile for this reviewer
         if reviewer_name in self.reviewer_profiles:

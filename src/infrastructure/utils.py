@@ -175,7 +175,7 @@ def remove_thinking_tags(text: str) -> str:
         Clean text with thinking tags and their contents removed
     """
     import re
-    from logging_utils import logger
+    from src.infrastructure.logging_utils import logger
     
     # Patterns to look for
     patterns = [
