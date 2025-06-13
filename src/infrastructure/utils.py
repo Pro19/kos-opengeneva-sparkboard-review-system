@@ -21,7 +21,7 @@ def parse_markdown_file(file_path: str) -> Dict[str, str]:
     Returns:
         Dictionary with parsed content
     """
-    from logging_utils import logger
+    from src.infrastructure.logging_utils import logger
     
     with open(file_path, 'r', encoding='utf-8') as file:
         content = file.read()

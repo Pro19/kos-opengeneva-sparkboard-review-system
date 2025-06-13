@@ -129,7 +129,7 @@ class Project:
         Returns:
             Integer confidence score (0-100)
         """
-        from logging_utils import logger
+        from src.infrastructure.logging_utils import logger
         
         logger.debug(f"Parsing confidence score from: '{confidence_text}'")
         

@@ -25,7 +25,7 @@ Base = declarative_base()
 
 def init_db():
     """Initialize database by creating all tables"""
-    from src.api.models import Project, Review, ProcessingJob, FeedbackRepo
+    from src.api.models import Project, Review, ProcessingJob, FeedbackReport
     Base.metadata.create_all(bind=engine)
 
 def get_db():

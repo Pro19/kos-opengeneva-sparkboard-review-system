@@ -282,8 +282,8 @@ class FeedbackGenerator:
     
     def _generate_radar_chart(self, project, output_dir: str) -> Optional[str]:
         """Generate a radar chart for the project feedback scores."""
-        from logging_utils import logger
-        from config import FEEDBACK_SETTINGS
+        from src.infrastructure.logging_utils import logger
+        from src.infrastructure.config import FEEDBACK_SETTINGS
         
         try:
             # Get chart settings from config
