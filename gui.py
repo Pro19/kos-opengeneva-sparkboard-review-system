@@ -6,6 +6,58 @@ import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel
 
 
+class MaterialColors:
+    """Material Design color palette."""
+    PRIMARY = "#2196F3"
+    PRIMARY_DARK = "#1976D2"
+    PRIMARY_LIGHT = "#BBDEFB"
+    SURFACE = "#FFFFFF"
+    BACKGROUND = "#FAFAFA"
+    ON_SURFACE = "#212121"
+    ON_BACKGROUND = "#424242"
+    DIVIDER = "#E0E0E0"
+
+
+def apply_material_style():
+    """Apply Material Design styles."""
+    return f"""
+    QMainWindow {{
+        background-color: {MaterialColors.BACKGROUND};
+        color: {MaterialColors.ON_BACKGROUND};
+    }}
+    
+    QTabWidget::pane {{
+        border: 1px solid {MaterialColors.DIVIDER};
+        background-color: {MaterialColors.SURFACE};
+        border-radius: 8px;
+    }}
+    
+    QTabBar::tab {{
+        background-color: {MaterialColors.SURFACE};
+        color: {MaterialColors.ON_SURFACE};
+        padding: 12px 24px;
+        margin-right: 4px;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        font-weight: 500;
+        min-width: 100px;
+    }}
+    
+    QTabBar::tab:selected {{
+        background-color: {MaterialColors.PRIMARY};
+        color: white;
+    }}
+    
+    QTabBar::tab:hover:!selected {{
+        background-color: {MaterialColors.PRIMARY_LIGHT};
+    }}
+    
+    QLabel {{
+        color: {MaterialColors.ON_SURFACE};
+    }}
+    """
+
+
 class MainWindow(QMainWindow):
     """Main application window."""
 
@@ -39,11 +91,17 @@ class MainWindow(QMainWindow):
         layout.addWidget(tab_widget)
         self.statusBar().showMessage("Ready")
 
+        # Apply Material Design styling
+        self.setStyleSheet(apply_material_style())
+
 
 def main():
     """Main application entry point."""
     app = QApplication(sys.argv)
     app.setApplicationName("Hackathon Review System")
+
+    # Apply Material Design styles
+    apply_material_style()
 
     window = MainWindow()
     window.show()
