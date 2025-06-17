@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QLineEdit, QPushButton, QTextEdit, QTreeWidget, QTreeWidgetItem,
     QGroupBox, QMessageBox, QFileDialog, QComboBox, QCheckBox, QSpinBox,
-    QFormLayout, QProgressBar
+    QFormLayout, QProgressBar, QTableWidget, QTableWidgetItem, QSplitter
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QFont
@@ -335,6 +335,76 @@ class AnalysisTab(QWidget):
             self.progress_bar.setVisible(False)
 
 
+class ResultsTab(QWidget):
+    """Tab for viewing analysis results."""
+
+    def __init__(self, parent):
+        super().__init__()
+        self.parent = parent
+        self.setup_ui()
+
+    def setup_ui(self):
+        """Set up the results tab UI."""
+        layout = QVBoxLayout()
+
+        # Results selection
+        selection_group = QGroupBox("Analysis Results")
+        selection_layout = QHBoxLayout()
+
+        self.results_combo = QComboBox()
+        self.refresh_results_btn = QPushButton("Refresh Results")
+
+        selection_layout.addWidget(QLabel("Project:"))
+        selection_layout.addWidget(self.results_combo)
+        selection_layout.addWidget(self.refresh_results_btn)
+        selection_layout.addStretch()
+
+        selection_group.setLayout(selection_layout)
+
+        # Results display
+        display_group = QGroupBox("Project Results")
+        display_layout = QVBoxLayout()
+
+        # Create splitter for scores and report
+        splitter = QSplitter(Qt.Orientation.Horizontal)
+
+        # Scores table
+        scores_widget = QWidget()
+        scores_layout = QVBoxLayout()
+        scores_layout.addWidget(QLabel("Feedback Scores:"))
+
+        self.scores_table = QTableWidget()
+        self.scores_table.setColumnCount(2)
+        self.scores_table.setHorizontalHeaderLabels(["Dimension", "Score"])
+
+        scores_layout.addWidget(self.scores_table)
+        scores_widget.setLayout(scores_layout)
+
+        # Report display
+        report_widget = QWidget()
+        report_layout = QVBoxLayout()
+        report_layout.addWidget(QLabel("Final Review:"))
+
+        self.report_display = QTextEdit()
+        self.report_display.setReadOnly(True)
+
+        report_layout.addWidget(self.report_display)
+        report_widget.setLayout(report_layout)
+
+        splitter.addWidget(scores_widget)
+        splitter.addWidget(report_widget)
+        splitter.setSizes([300, 500])
+
+        display_layout.addWidget(splitter)
+        display_group.setLayout(display_layout)
+
+        # Layout assembly
+        layout.addWidget(selection_group)
+        layout.addWidget(display_group, 1)
+
+        self.setLayout(layout)
+
+
 class MainWindow(QMainWindow):
     """Main application window."""
 
@@ -368,13 +438,9 @@ class MainWindow(QMainWindow):
         self.analysis_tab = AnalysisTab(self)
         tab_widget.addTab(self.analysis_tab, "Analysis")
 
-        # Add placeholder tabs
-        for name in ["Results"]:
-            tab = QWidget()
-            tab_layout = QVBoxLayout()
-            tab_layout.addWidget(QLabel(f"{name} - Coming soon!"))
-            tab.setLayout(tab_layout)
-            tab_widget.addTab(tab, name)
+        # Add the ResultsTab as the fourth tab
+        self.results_tab = ResultsTab(self)
+        tab_widget.addTab(self.results_tab, "Results")
 
         layout.addWidget(tab_widget)
         self.statusBar().showMessage("Ready")
