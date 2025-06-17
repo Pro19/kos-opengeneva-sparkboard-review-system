@@ -3,13 +3,16 @@ PyQt6-based GUI for the Ontology-Driven Hackathon Review System.
 """
 
 import sys
+import threading
+from datetime import datetime
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QLineEdit, QPushButton, QTextEdit, QTreeWidget, QTreeWidgetItem,
     QGroupBox, QMessageBox, QFileDialog, QComboBox, QCheckBox, QSpinBox,
-    QFormLayout
+    QFormLayout, QProgressBar
 )
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtGui import QFont
 
 # Import the existing modules
 from project import load_all_projects
@@ -250,6 +253,88 @@ class ConfigTab(QWidget):
                 self, "Warning", f"Error loading configuration: {str(e)}")
 
 
+class AnalysisTab(QWidget):
+    """Tab for running analysis and monitoring progress."""
+
+    def __init__(self, parent):
+        super().__init__()
+        self.parent = parent
+        self.setup_ui()
+
+    def setup_ui(self):
+        """Set up the analysis tab UI."""
+        layout = QVBoxLayout()
+
+        # Status group
+        status_group = QGroupBox("Analysis Status")
+        status_layout = QVBoxLayout()
+
+        self.status_label = QLabel("Ready to analyze projects")
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setVisible(False)
+
+        status_layout.addWidget(self.status_label)
+        status_layout.addWidget(self.progress_bar)
+        status_group.setLayout(status_layout)
+
+        # Log output
+        log_group = QGroupBox("Analysis Log")
+        log_layout = QVBoxLayout()
+
+        self.log_output = QTextEdit()
+        self.log_output.setReadOnly(True)
+        self.log_output.setFont(QFont("Consolas", 9))
+
+        log_layout.addWidget(self.log_output)
+        log_group.setLayout(log_layout)
+
+        # Control buttons
+        control_layout = QHBoxLayout()
+        self.start_btn = QPushButton("Start Analysis")
+        self.stop_btn = QPushButton("Stop Analysis")
+        self.clear_log_btn = QPushButton("Clear Log")
+
+        self.start_btn.clicked.connect(self.parent.start_analysis)
+        self.stop_btn.clicked.connect(self.parent.stop_analysis)
+        self.clear_log_btn.clicked.connect(self.clear_log)
+
+        self.stop_btn.setEnabled(False)
+
+        control_layout.addWidget(self.start_btn)
+        control_layout.addWidget(self.stop_btn)
+        control_layout.addStretch()
+        control_layout.addWidget(self.clear_log_btn)
+
+        # Layout assembly
+        layout.addWidget(status_group)
+        layout.addWidget(log_group, 1)
+        layout.addLayout(control_layout)
+
+        self.setLayout(layout)
+
+    def add_log_message(self, message):
+        """Add a message to the log output."""
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        self.log_output.append(f"[{timestamp}] {message}")
+
+    def clear_log(self):
+        """Clear the log output."""
+        self.log_output.clear()
+
+    def set_analysis_running(self, running):
+        """Set the analysis running state."""
+        self.start_btn.setEnabled(not running)
+        self.stop_btn.setEnabled(running)
+        self.progress_bar.setVisible(running)
+
+        if running:
+            self.status_label.setText("Analysis in progress...")
+            self.progress_bar.setRange(0, 0)  # Indeterminate progress
+        else:
+            self.status_label.setText("Analysis completed")
+            self.progress_bar.setVisible(False)
+
+
 class MainWindow(QMainWindow):
     """Main application window."""
 
@@ -279,8 +364,12 @@ class MainWindow(QMainWindow):
         self.config_tab = ConfigTab(self)
         tab_widget.addTab(self.config_tab, "Configuration")
 
+        # Add the AnalysisTab as the third tab
+        self.analysis_tab = AnalysisTab(self)
+        tab_widget.addTab(self.analysis_tab, "Analysis")
+
         # Add placeholder tabs
-        for name in ["Analysis", "Results"]:
+        for name in ["Results"]:
             tab = QWidget()
             tab_layout = QVBoxLayout()
             tab_layout.addWidget(QLabel(f"{name} - Coming soon!"))
@@ -292,6 +381,60 @@ class MainWindow(QMainWindow):
 
         # Apply Material Design styling
         self.setStyleSheet(apply_material_style())
+
+    def start_analysis(self):
+        """Start the analysis of selected projects."""
+        try:
+            # Get selected projects
+            selected_items = self.project_tab.project_list.selectedItems()
+            if not selected_items:
+                QMessageBox.warning(
+                    self, "No Projects Selected", "Please select one or more projects to analyze.")
+                return
+
+            projects_to_analyze = [
+                item.data(0, Qt.ItemDataRole.UserRole) for item in selected_items]
+
+            # Update status and start analysis in a new thread
+            self.analysis_tab.add_log_message(
+                "Starting analysis of selected projects...")
+            self.analysis_tab.set_analysis_running(True)
+
+            # Simulate analysis process
+            def run_analysis():
+                try:
+                    for i in range(5):
+                        logger.info(f"Running analysis step {i+1}/5...")
+                        self.analysis_tab.add_log_message(
+                            f"Running analysis step {i+1}/5...")
+                        QThread.msleep(1000)  # Simulate time-consuming step
+
+                    # Analysis completed
+                    self.analysis_tab.add_log_message(
+                        "Analysis completed successfully.")
+                    logger.info("Analysis completed successfully.")
+
+                except Exception as e:
+                    self.analysis_tab.add_log_message(
+                        f"Error during analysis: {str(e)}")
+                    logger.error(f"Error during analysis: {str(e)}")
+
+                finally:
+                    self.analysis_tab.set_analysis_running(False)
+
+            # Run the analysis in a separate thread
+            threading.Thread(target=run_analysis, daemon=True).start()
+
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Error", f"Failed to start analysis: {str(e)}")
+
+    def stop_analysis(self):
+        """Stop the analysis process."""
+        # For now, just log and update the UI
+        self.analysis_tab.add_log_message("Analysis stopped by user.")
+        logger.info("Analysis stopped by user.")
+        self.analysis_tab.set_analysis_running(False)
 
 
 def main():
