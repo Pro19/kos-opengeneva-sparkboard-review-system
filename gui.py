@@ -6,13 +6,14 @@ import sys
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QLineEdit, QPushButton, QTextEdit, QTreeWidget, QTreeWidgetItem,
-    QGroupBox, QMessageBox, QFileDialog
+    QGroupBox, QMessageBox, QFileDialog, QComboBox, QCheckBox, QSpinBox,
+    QFormLayout
 )
 from PyQt6.QtCore import Qt
 
 # Import the existing modules
 from project import load_all_projects
-from config import PATHS
+from config import PATHS, SETTINGS, LLM_CONFIG
 from logging_utils import logger
 
 
@@ -167,6 +168,88 @@ class ProjectTab(QWidget):
                 self, "Error", f"Failed to load projects: {str(e)}")
 
 
+class ConfigTab(QWidget):
+    """Tab for system configuration."""
+
+    def __init__(self, parent):
+        super().__init__()
+        self.parent = parent
+        self.setup_ui()
+        self.load_config()
+
+    def setup_ui(self):
+        """Set up the configuration tab UI."""
+        layout = QVBoxLayout()
+
+        # LLM Configuration
+        llm_group = QGroupBox("LLM Configuration")
+        llm_layout = QFormLayout()
+
+        self.provider_combo = QComboBox()
+        self.provider_combo.addItems(["ollama", "claude", "chatgpt", "groq"])
+
+        self.api_key_edit = QLineEdit()
+        self.api_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
+
+        self.model_edit = QLineEdit()
+        self.max_tokens_spin = QSpinBox()
+        self.max_tokens_spin.setRange(100, 10000)
+        self.max_tokens_spin.setValue(1000)
+
+        llm_layout.addRow("Provider:", self.provider_combo)
+        llm_layout.addRow("API Key:", self.api_key_edit)
+        llm_layout.addRow("Model:", self.model_edit)
+        llm_layout.addRow("Max Tokens:", self.max_tokens_spin)
+
+        llm_group.setLayout(llm_layout)
+
+        # General Settings
+        general_group = QGroupBox("General Settings")
+        general_layout = QFormLayout()
+
+        self.update_ontology_check = QCheckBox()
+        self.generate_charts_check = QCheckBox()
+
+        self.output_dir_edit = QLineEdit()
+
+        general_layout.addRow("Update Ontology:", self.update_ontology_check)
+        general_layout.addRow("Generate Charts:", self.generate_charts_check)
+        general_layout.addRow("Output Directory:", self.output_dir_edit)
+
+        general_group.setLayout(general_layout)
+
+        # Layout assembly
+        layout.addWidget(llm_group)
+        layout.addWidget(general_group)
+        layout.addStretch()
+
+        self.setLayout(layout)
+
+    def load_config(self):
+        """Load configuration from config file."""
+        try:
+            # LLM Config
+            current_provider = LLM_CONFIG.get("provider", "ollama")
+            self.provider_combo.setCurrentText(current_provider)
+
+            provider_config = LLM_CONFIG.get(current_provider, {})
+            self.api_key_edit.setText(provider_config.get("api_key", ""))
+            self.model_edit.setText(provider_config.get("model", ""))
+            self.max_tokens_spin.setValue(
+                provider_config.get("max_tokens", 1000))
+
+            # General Settings
+            self.update_ontology_check.setChecked(
+                SETTINGS.get("update_ontology", False))
+            self.generate_charts_check.setChecked(
+                SETTINGS.get("generate_charts", True))
+            self.output_dir_edit.setText(PATHS.get("output_dir", "output/"))
+
+        except Exception as e:
+            QMessageBox.warning(
+                self, "Warning", f"Error loading configuration: {str(e)}")
+
+
 class MainWindow(QMainWindow):
     """Main application window."""
 
@@ -192,17 +275,17 @@ class MainWindow(QMainWindow):
         self.project_tab = ProjectTab(self)
         tab_widget.addTab(self.project_tab, "Projects")
 
+        # Add the ConfigTab as the second tab
+        self.config_tab = ConfigTab(self)
+        tab_widget.addTab(self.config_tab, "Configuration")
+
         # Add placeholder tabs
-        for name in ["Configuration", "Analysis", "Results"]:
+        for name in ["Analysis", "Results"]:
             tab = QWidget()
             tab_layout = QVBoxLayout()
             tab_layout.addWidget(QLabel(f"{name} - Coming soon!"))
             tab.setLayout(tab_layout)
             tab_widget.addTab(tab, name)
-
-        # Add the ProjectTab as the first tab
-        self.project_tab = ProjectTab(self)
-        tab_widget.addTab(self.project_tab, "Projects")
 
         layout.addWidget(tab_widget)
         self.statusBar().showMessage("Ready")
