@@ -109,6 +109,13 @@ class ProjectTab(QWidget):
         list_group = QGroupBox("📋 Available Projects")
         list_layout = QVBoxLayout()
 
+        # Add instruction label
+        instruction_label = QLabel(
+            "✅ Check the projects you want to analyze, then click 'Analyze Selected Projects'")
+        instruction_label.setStyleSheet(
+            "color: #666; margin: 5px;")
+        list_layout.addWidget(instruction_label)
+
         self.project_list = QTreeWidget()
         self.project_list.setHeaderLabels(["Project", "Reviews", "Status"])
         self.project_list.setAlternatingRowColors(True)
@@ -121,6 +128,7 @@ class ProjectTab(QWidget):
         action_layout.setSpacing(12)
 
         self.analyze_btn = QPushButton("🚀 Analyze Selected Projects")
+        self.analyze_btn.clicked.connect(self.parent.start_analysis)
 
         action_layout.addStretch()
         action_layout.addWidget(self.analyze_btn)
@@ -221,9 +229,17 @@ class ConfigTab(QWidget):
 
         general_group.setLayout(general_layout)
 
+        # Save button
+        save_layout = QHBoxLayout()
+        self.save_config_btn = QPushButton("💾 Save Configuration")
+        self.save_config_btn.clicked.connect(self.save_config)
+        save_layout.addStretch()
+        save_layout.addWidget(self.save_config_btn)
+
         # Layout assembly
         layout.addWidget(llm_group)
         layout.addWidget(general_group)
+        layout.addLayout(save_layout)
         layout.addStretch()
 
         self.setLayout(layout)
@@ -251,6 +267,41 @@ class ConfigTab(QWidget):
         except Exception as e:
             QMessageBox.warning(
                 self, "Warning", f"Error loading configuration: {str(e)}")
+
+    def save_config(self):
+        """Save configuration changes."""
+        try:
+            import json
+            import os
+
+            # Update the global configuration dictionaries
+            current_provider = self.provider_combo.currentText()
+            LLM_CONFIG["provider"] = current_provider
+
+            # Update provider-specific settings
+            if current_provider not in LLM_CONFIG:
+                LLM_CONFIG[current_provider] = {}
+
+            LLM_CONFIG[current_provider]["api_key"] = self.api_key_edit.text()
+            LLM_CONFIG[current_provider]["model"] = self.model_edit.text()
+            LLM_CONFIG[current_provider]["max_tokens"] = self.max_tokens_spin.value()
+
+            # Update general settings
+            SETTINGS["update_ontology"] = self.update_ontology_check.isChecked()
+            SETTINGS["generate_charts"] = self.generate_charts_check.isChecked()
+            PATHS["output_dir"] = self.output_dir_edit.text()
+
+            # Save to config.py (this is a simplified approach)
+            # In a real application, you'd want to save to a separate config file
+            QMessageBox.information(
+                self, "Configuration Saved",
+                "Configuration has been updated for this session.\n"
+                "Note: Changes will be lost when the application is restarted.\n"
+                "For permanent changes, modify config.py directly.")
+
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Error", f"Failed to save configuration: {str(e)}")
 
 
 class AnalysisTab(QWidget):
@@ -353,6 +404,9 @@ class ResultsTab(QWidget):
 
         self.results_combo = QComboBox()
         self.refresh_results_btn = QPushButton("Refresh Results")
+        self.refresh_results_btn.clicked.connect(self.refresh_results)
+        self.results_combo.currentTextChanged.connect(
+            self.load_project_results)
 
         selection_layout.addWidget(QLabel("Project:"))
         selection_layout.addWidget(self.results_combo)
@@ -404,6 +458,73 @@ class ResultsTab(QWidget):
 
         self.setLayout(layout)
 
+        # Load initial results
+        self.refresh_results()
+
+    def refresh_results(self):
+        """Refresh the list of available results."""
+        import os
+        import glob
+
+        self.results_combo.clear()
+
+        # Look for JSON feedback files in the results directory
+        results_dir = "results/"
+        if os.path.exists(results_dir):
+            feedback_files = glob.glob(
+                os.path.join(results_dir, "*_feedback.json"))
+            for file_path in feedback_files:
+                filename = os.path.basename(file_path)
+                project_id = filename.replace("_feedback.json", "")
+                self.results_combo.addItem(project_id)
+
+    def load_project_results(self, project_id):
+        """Load and display results for a specific project."""
+        if not project_id:
+            return
+
+        import os
+        import json
+
+        try:
+            # Load the feedback JSON file
+            feedback_file = os.path.join(
+                "results", f"{project_id}_feedback.json")
+            if not os.path.exists(feedback_file):
+                self.report_display.setPlainText(
+                    f"No results found for project: {project_id}")
+                return
+
+            with open(feedback_file, 'r', encoding='utf-8') as f:
+                feedback_data = json.load(f)
+
+            # Populate scores table
+            feedback_scores = feedback_data.get("feedback_scores", {})
+            self.scores_table.setRowCount(len(feedback_scores))
+
+            row = 0
+            for dimension, score in feedback_scores.items():
+                if dimension != "overall_sentiment":  # Skip overall sentiment
+                    dimension_name = dimension.replace("_", " ").title()
+                    self.scores_table.setItem(
+                        row, 0, QTableWidgetItem(dimension_name))
+                    self.scores_table.setItem(
+                        row, 1, QTableWidgetItem(str(score)))
+                    row += 1
+
+            self.scores_table.setRowCount(row)  # Adjust row count
+            self.scores_table.resizeColumnsToContents()
+
+            # Display final review
+            final_review = feedback_data.get(
+                "final_review", "No final review available.")
+            self.report_display.setPlainText(final_review)
+
+        except Exception as e:
+            self.report_display.setPlainText(
+                f"Error loading results: {str(e)}")
+            logger.error(f"Error loading project results: {str(e)}")
+
 
 class MainWindow(QMainWindow):
     """Main application window."""
@@ -452,7 +573,13 @@ class MainWindow(QMainWindow):
         """Start the analysis of selected projects."""
         try:
             # Get selected projects
-            selected_items = self.project_tab.project_list.selectedItems()
+            selected_items = []
+            root = self.project_tab.project_list.invisibleRootItem()
+            for i in range(root.childCount()):
+                item = root.child(i)
+                if item.checkState(0) == Qt.CheckState.Checked:
+                    selected_items.append(item)
+
             if not selected_items:
                 QMessageBox.warning(
                     self, "No Projects Selected", "Please select one or more projects to analyze.")
@@ -466,24 +593,84 @@ class MainWindow(QMainWindow):
                 "Starting analysis of selected projects...")
             self.analysis_tab.set_analysis_running(True)
 
-            # Simulate analysis process
+            # Update project status to "Analyzing"
+            for item in selected_items:
+                item.setText(2, "Analyzing...")
+
+            # Real analysis process
             def run_analysis():
                 try:
-                    for i in range(5):
-                        logger.info(f"Running analysis step {i+1}/5...")
+                    from ontology import Ontology
+                    from reviewer import ReviewerProfile
+                    from review import ReviewAnalyzer
+                    from feedback import FeedbackGenerator
+                    import os
+
+                    # Initialize components
+                    self.analysis_tab.add_log_message(
+                        "Initializing analysis components...")
+                    ontology = Ontology()
+                    reviewer_profiler = ReviewerProfile(ontology)
+                    review_analyzer = ReviewAnalyzer(
+                        ontology, reviewer_profiler)
+                    feedback_generator = FeedbackGenerator(ontology)
+
+                    # Create output directory
+                    output_dir = "results/"
+                    os.makedirs(output_dir, exist_ok=True)
+
+                    # Process each selected project
+                    for i, project in enumerate(projects_to_analyze):
+                        project_name = project.project_id
                         self.analysis_tab.add_log_message(
-                            f"Running analysis step {i+1}/5...")
-                        QThread.msleep(1000)  # Simulate time-consuming step
+                            f"Processing project {i+1}/{len(projects_to_analyze)}: {project_name}")
+
+                        # Step 1: Analyze reviews
+                        self.analysis_tab.add_log_message(
+                            f"  - Analyzing reviews for {project_name}")
+                        review_analyzer.analyze_project_reviews(project)
+
+                        # Step 2: Generate feedback report
+                        self.analysis_tab.add_log_message(
+                            f"  - Generating feedback report for {project_name}")
+                        report_path = feedback_generator.generate_feedback_report(
+                            project, output_dir)
+                        self.analysis_tab.add_log_message(
+                            f"  - Report saved to: {report_path}")
+
+                        # Step 3: Generate visualization data
+                        self.analysis_tab.add_log_message(
+                            f"  - Generating visualization data for {project_name}")
+                        viz_data = feedback_generator.visualize_feedback(
+                            project)
+                        viz_path = os.path.join(
+                            output_dir, f"{project.project_id}_visualization.json")
+                        with open(viz_path, 'w', encoding='utf-8') as f:
+                            import json
+                            json.dump(viz_data, f, indent=2)
+                        self.analysis_tab.add_log_message(
+                            f"  - Visualization data saved to: {viz_path}")
 
                     # Analysis completed
                     self.analysis_tab.add_log_message(
-                        "Analysis completed successfully.")
+                        f"Analysis completed successfully for {len(projects_to_analyze)} project(s).")
                     logger.info("Analysis completed successfully.")
+
+                    # Update project status to "Completed"
+                    for item in selected_items:
+                        item.setText(2, "Completed")
+
+                    # Refresh results tab
+                    self.results_tab.refresh_results()
 
                 except Exception as e:
                     self.analysis_tab.add_log_message(
                         f"Error during analysis: {str(e)}")
                     logger.error(f"Error during analysis: {str(e)}")
+
+                    # Update project status to "Error"
+                    for item in selected_items:
+                        item.setText(2, "Error")
 
                 finally:
                     self.analysis_tab.set_analysis_running(False)
