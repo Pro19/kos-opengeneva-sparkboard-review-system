@@ -5,18 +5,21 @@ This repository contains an implementation of an ontology-driven AI system for a
 ## Installation
 
 1. Clone this repository:
+
    ```bash
    git clone https://github.com/your-username/hackathon-review-system.git
    cd hackathon-review-system
    ```
 
 2. Create and activate a virtual environment (recommended):
+
    ```bash
    python -m venv .venv
    source .venv/bin/activate  # On Windows, use: venv\Scripts\activate
    ```
 
 3. Install required dependencies:
+
    ```bash
    pip install scikit-learn numpy requests
    ```
@@ -24,6 +27,14 @@ This repository contains an implementation of an ontology-driven AI system for a
 4. (Optional) Install Ollama for local LLM inference:
    - Visit [Ollama's website](https://ollama.ai/) to download and install
    - Pull a model: `ollama pull llama3` or `ollama pull mistral`
+
+## GUI Application
+
+A simple GUI application is included to analyze the project and visualize the ontology + project reviews:
+
+```bash
+python gui.py
+```
 
 ## LLM Provider Support
 
@@ -40,22 +51,22 @@ You can configure which LLM provider to use in `config.py`:
 ```python
 LLM_CONFIG = {
     "provider": "ollama",  # Choose between "claude", "chatgpt", or "ollama"
-    
+
     "ollama": {
         "base_url": "http://localhost:11434",  # Default Ollama API URL
         "model": "llama3",  # Choose your available model
         "max_tokens": 1000
     },
-    
+
     "claude": {
         "api_key": "YOUR_ANTHROPIC_API_KEY",
         "model": "claude-3-opus-20240229",
         "max_tokens": 1000
     },
-    
+
     "chatgpt": {
         "api_key": "YOUR_OPENAI_API_KEY",
-        "model": "gpt-4-turbo", 
+        "model": "gpt-4-turbo",
         "max_tokens": 1000
     },
 
@@ -94,6 +105,7 @@ python run_test.py
 ```
 
 This script will:
+
 1. Set up the test environment with sample projects
 2. Update the configuration to use the test projects directory
 3. Run the main program and generate feedback reports in the `output` directory
@@ -107,11 +119,13 @@ python main.py
 ```
 
 Additional options:
+
 - `--project PROJECT_ID`: Process a specific project
 - `--output OUTPUT_DIR`: Specify output directory
 - `--new-ontology`: Create a new ontology instead of loading existing one
 
 Example:
+
 ```bash
 python main.py --project ai-health-assistant --output results
 ```
