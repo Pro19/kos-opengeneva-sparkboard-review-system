@@ -122,35 +122,6 @@ LLM_CONFIG = {
 python -m src.cli.llm_cli test ollama
 ```
 
-#### Run the application (CLI Version):
-```bash
-# process all projects in the projects/ directory
-python -m src.cli.main
-
-# process a specific project
-python -m src.cli.main --project <project_id>
-
-# create new ontology
-python -m src.cli.main --new-ontology
-
-# custom output directory
-python -m src.cli.main --output custom_output/
-```
-#### Run the application (REST API Version):
-```bash
-# Start the API server
-python scripts/run_api.py
-
-# Or directly with uvicorn
-uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --reload
-```
-
-API Documentation will be available at:
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
-- Scalar: http://localhost:8000/scalar (prefer this)
-- OpenAPI JSON: http://localhost:8000/openapi.json
-
 ---
 
 ## Ontology & Data Structure
@@ -197,3 +168,132 @@ Each domain has relevant dimensions for focused evaluation:
 - _Technical_: Technical Feasibility, Implementation Complexity, Scalability, Innovation
 - _Clinical_: Impact, Implementation Complexity, Technical Feasibility
 - _Business_: ROI, Scalability, Impact
+
+### Data Schema
+
+The system uses both file-based storage (for CLI) and SQLite database (for API):
+```sql
+Projects: project_id, name, description, work_done, status
+Reviews: review_id, project_id, reviewer_name, text_review, confidence_score
+ProcessingJobs: job_id, project_id, status, progress
+FeedbackReports: report_id, project_id, feedback_scores, final_review
+```
+
+## File Structure
+
+```
+kos-opengeneva-sparkboard-review-system/
+├── README.md                         # This comprehensive documentation
+├── requirements.txt                  # Python dependencies
+├── .gitignore                        # Git ignore rules
+│
+├── scripts/                          # Installation and utility scripts
+│   ├── install-ollama.bash           # Ollama installation script (Linux)
+│   └── run_api.py                    # API server startup script
+│
+├── src/                              # Main source code
+│   ├── api/                          # REST API implementation
+│   │   ├── __init__.py
+│   │   ├── app.py                    # FastAPI application
+│   │   ├── models.py                 # SQLAlchemy & Pydantic models
+│   │   ├── processing.py             # Background processing tasks
+│   │   └── scalar_fastapi.py         # API documentation integration
+│   │
+│   ├── cli/                          # Command-line interface
+│   │   ├── __init__.py
+│   │   ├── main.py                   # CLI entry point
+│   │   └── llm_cli.py                # LLM provider management
+│   │
+│   ├── core/                         # Core logic
+│   │   ├── __init__.py
+│   │   ├── ontology.py               # Ontology management
+│   │   ├── project.py                # Project data structures
+│   │   ├── reviewer.py               # Reviewer profiling
+│   │   ├── review.py                 # Review analysis
+│   │   └── feedback.py               # Feedback generation
+│   │
+│   └── infrastructure/               # Infrastructure & utilities
+│       ├── __init__.py
+│       ├── config.py                 # Configuration settings
+│       ├── database.py               # Database setup
+│       ├── llm_interface.py          # LLM provider interface
+│       ├── logging_utils.py          # Logging configuration
+│       └── utils.py                  # Utility functions
+│
+├── data/                             # Ontology and reference data
+│   ├── ontology.json                 # JSON ontology definition
+│   └── ontology.ttl                  # RDF/TTL ontology format
+│
+├── docs/                             # Documentation
+│   ├── api.md                        # REST API documentation
+│   └── uninstall-ollama.md           # Ollama uninstallation guide
+│
+├── projects/                         # Sample project data (CLI mode)
+│   └── [project_directories]/        # Individual project folders
+```
+
+- **Core Logic (`src/core/`):** Domain-specific business logic for ontology, reviews, and feedback
+- **API Layer (`src/api/`):** REST API with OpenAPI documentation
+- **CLI Interface (`src/cli/`):** Command-line tools for batch processing
+- **Infrastructure (`src/infrastructure/`):** Project wide features like logging, database, LLM integration
+- **Ontology Data (`data/`):** Structured knowledge representation in JSON and RDF formats
+- **Documentation (`docs/`):** Technical documentation and guides
+
+---
+
+## Usage Instructions
+
+### CLI Version:
+```bash
+# process all projects in the projects/ directory
+python -m src.cli.main
+
+# process a specific project
+python -m src.cli.main --project <project_id>
+
+# create new ontology
+python -m src.cli.main --new-ontology
+
+# custom output directory
+python -m src.cli.main --output custom_output/
+```
+
+For CLI usage, organize projects as:
+```
+projects/
+├── project1/
+│   ├── description.md
+│   ├── review1.md
+│   └── review2.md
+└── project2/
+    ├── description.md
+    └── review1.md
+```
+
+### REST API Version:
+```bash
+# start the API server
+python scripts/run_api.py
+
+# or directly with uvicorn
+uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --reload
+```
+
+API Documentation will be available at:
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+- Scalar: http://localhost:8000/scalar (prefer this)
+- OpenAPI JSON: http://localhost:8000/openapi.json
+
+
+## References & Acknowledgments
+
+### Academic References
+
+### Acknowledgments
+
+Special thanks to:
+
+- Professor and TA of D400006 for guidance on knowledge organization systems (Thomas and Tibaut)
+- Maintainer of OpenGeneva Sparkboard (Matt)
+- Our team members for collaborative development
