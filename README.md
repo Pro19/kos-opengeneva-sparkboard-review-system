@@ -10,6 +10,8 @@
 - Oussama Rattazi
 - Pranshu Mishra
 
+---
+
 ## Project Description
 
 ### Overview
@@ -44,12 +46,110 @@ Traditional hackathon peer reviews suffer from several limitations:
 ---
 
 ## Installation & Setup
+
 ### Prerequisites
-### Dependencies
+
+- Python 3.13.3 or latest
+- Git
+- LLM Provider Access (at least one of the following):
+    - Ollama (local) - _recommended for development_
+    - Anthropic Claude
+    - OpenAI ChatGPT
+    - Groq
+
 ### Setup Instructions
-#### Configure LLM Provider
+
+**1. Clone the repository**
+```bash
+git clone https://github.com/Pro19/kos-opengeneva-sparkboard-review-system
+
+cd kos-opengeneva-sparkboard-review-system
+```
+**2. Create virtual environment**
+```bash
+python -m venv .venv        # linux
+```
+
+**3. Install dependencies**
+```bash
+pip install -r requirements.txt
+```
+
+**4. Configure LLM Provider**
+
+```bash
+# Install Ollama (if not already installed)
+./scripts/install-ollama.bash   # linux
+
+# Pull a model (e.g., DeepSeek R1)
+ollama pull deepseek-r1:1.5b
+```
+
+Edit `src/infrastructure/config.py` to configure your preferred LLM provider:
+
+**Example provider: Ollama (Local, Free)**
+
+Install Ollama using the provided script:
+```bash
+# linux only
+chmod +x scripts/install-ollama.bash
+./scripts/install-ollama.bash
+
+# pull a model
+ollama pull deepseek-r1:1.5b
+# or
+ollama pull llama3
+
+ollama serve  # usually runs on localhost:11434
+```
+
+Update config (default):
+```python
+LLM_CONFIG = {
+    "provider": "ollama",
+    
+    "ollama": {
+        "base_url": "http://localhost:11434",
+        "model": "deepseek-r1:1.5b"
+    }
+}
+```
+
+**Test LLM configuration**
+```bash
+# python -m src.cli.llm_cli test <provider_name>
+
+python -m src.cli.llm_cli test ollama
+```
+
 #### Run the application (CLI Version):
+```bash
+# process all projects in the projects/ directory
+python -m src.cli.main
+
+# process a specific project
+python -m src.cli.main --project <project_id>
+
+# create new ontology
+python -m src.cli.main --new-ontology
+
+# custom output directory
+python -m src.cli.main --output custom_output/
+```
 #### Run the application (REST API Version):
+```bash
+# Start the API server
+python scripts/run_api.py
+
+# Or directly with uvicorn
+uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --reload
+```
+
+API Documentation will be available at:
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+- Scalar: http://localhost:8000/scalar (prefer this)
+- OpenAPI JSON: http://localhost:8000/openapi.json
 
 ---
 
@@ -59,41 +159,41 @@ Traditional hackathon peer reviews suffer from several limitations:
 
 Our ontology is structured around five core components:
 
-1. **Domains (`hr:Domain`)**
+**1. Domains (`hr:Domain`)**
 
-- Technical: Programming, software engineering, hardware development
-- Clinical: Medical/healthcare expertise, patient care, diagnosis
-- Administrative: Healthcare administration, policy, management
-- Business: Market analysis, commercialization, entrepreneurship
-- Design: UI/UX design, visual design, interaction design
-- User Experience: User research, accessibility, behavior analysis
+- _Technical_: Programming, software engineering, hardware development
+- _Clinical_: Medical/healthcare expertise, patient care, diagnosis
+- _Administrative_: Healthcare administration, policy, management
+- _Business_: Market analysis, commercialization, entrepreneurship
+- _Design_: UI/UX design, visual design, interaction design
+- _User Experience_: User research, accessibility, behavior analysis
 
-2. **Expertise Levels (`hr:ExpertiseLevel`)**
+**2. Expertise Levels (`hr:ExpertiseLevel`)**
 
 Based on confidence scores (0-100):
-- Beginner (0-40): Basic understanding
-- Skilled (41-70): Practical experience
-- Talented (71-85): Deep understanding
-- Seasoned (86-95): Extensive experience
-- Expert (96-100): Top-level mastery
+- _Beginner (0-40)_: Basic understanding
+- _Skilled (41-70)_: Practical experience
+- _Talented (71-85)_: Deep understanding
+- _Seasoned (86-95)_: Extensive experience
+- _Expert (96-100)_: Top-level mastery
 
-3. **Impact Dimensions (`hr:ImpactDimension`)**
+**3. Impact Dimensions (`hr:ImpactDimension`)**
 
-- Technical Feasibility: Implementation difficulty with current technology
-- Innovation: Novelty and uniqueness of approach
-- Impact: Potential effect on target problem/domain
-- Implementation Complexity: Practical deployment difficulty
-- Scalability: Ability to scale to wider implementation
-- Return on Investment: Expected benefits vs. costs
+- _Technical Feasibility_: Implementation difficulty with current technology
+- _Innovation_: Novelty and uniqueness of approach
+- _Impact_: Potential effect on target problem/domain
+- _Implementation Complexity_: Practical deployment difficulty
+- _Scalability_: Ability to scale to wider implementation
+- _Return on Investment_: Expected benefits vs. costs
 
-4. **Project Types (`hr:ProjectType`)**
+**4. Project Types (`hr:ProjectType`)**
 
 Software, Hardware, Data, Process, Service
 
-5. **Review Dimensions Mapping**
+**5. Review Dimensions Mapping**
 
 Each domain has relevant dimensions for focused evaluation:
 
-- Technical → Technical Feasibility, Implementation Complexity, Scalability, Innovation
-- Clinical → Impact, Implementation Complexity, Technical Feasibility
-- Business → ROI, Scalability, Impact
+- _Technical_: Technical Feasibility, Implementation Complexity, Scalability, Innovation
+- _Clinical_: Impact, Implementation Complexity, Technical Feasibility
+- _Business_: ROI, Scalability, Impact
