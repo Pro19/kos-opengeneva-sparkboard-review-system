@@ -1,157 +1,321 @@
-# Ontology-Driven AI for Multi-Perspective Peer Review
+# OpenGeneva Sparkboard: Ontology-Driven AI for Multi-Perspective Peer Review in Hackathons
 
-This repository contains an implementation of an ontology-driven AI system for analyzing hackathon project reviews from multiple perspectives, with flexible LLM provider support.
+## Team Information
 
-## Installation
+**Course:** D400006 – Knowledge Organization Systems, Université de Genève
 
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/your-username/hackathon-review-system.git
-   cd hackathon-review-system
-   ```
+**Team Members:**
 
-2. Create and activate a virtual environment (recommended):
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows, use: venv\Scripts\activate
-   ```
+- Eisha Tir Raazia
+- Mahidhar Reddy Vaka
+- Oussama Rattazi
+- Pranshu Mishra
 
-3. Install required dependencies:
-   ```bash
-   pip install scikit-learn numpy requests
-   ```
+---
 
-4. (Optional) Install Ollama for local LLM inference:
-   - Visit [Ollama's website](https://ollama.ai/) to download and install
-   - Pull a model: `ollama pull llama3` or `ollama pull mistral`
+## Project Description
 
-## LLM Provider Support
+### Overview
 
-The system now supports multiple LLM providers:
+The OpenGeneva Sparkboard is an innovative ontology-driven AI system designed to enhance the depth and utility of peer review systems in hackathon environments. Rather than relying on simplistic ranking scales, our approach leverages structured knowledge representation to capture both reviewer characteristics and feedback dimensions, enabling comprehensive multi-perspective analysis of hackathon projects.
 
-1. **Ollama** (default): Run open-source LLMs locally
-2. **Claude**: Use Anthropic's Claude models via API
-3. **ChatGPT**: Use OpenAI's GPT models via API
+### State-of-the-Art & Problem Statement
 
-### Configuring LLM Providers
+Traditional hackathon peer reviews suffer from several limitations:
 
-You can configure which LLM provider to use in `config.py`:
+- Lack of structure in review processes
+- Poor expertise matching between reviewers and projects
+- Insufficient perspective coverage across different domains
+- Inconsistent evaluation criteria across reviewers
+
+### Key Features
+
+- **Ontological Knowledge Representation:** Structured classification of domains, expertise levels, and evaluation dimensions
+- **Reviewer Expertise Profiling:** Automatic classification of reviewers based on confidence scores and review content
+- **Domain Relevance Scoring:** Intelligent matching between reviewer expertise and project domains
+- **Artificial Review Generation:** AI-generated reviews to fill gaps in domain coverage
+- **Multi-dimensional Evaluation:** Comprehensive scoring across technical feasibility, innovation, impact, scalability, and ROI
+- **Hybrid Human-AI Pipeline:** Combines human expertise with AI augmentation for comprehensive analysis
+
+### Ontology & AI Methods Used
+
+- **Knowledge Graph Structure:** RDF/TTL-based ontology defining domains, subdomains, expertise levels, and evaluation dimensions
+- **Natural Language Processing:** LLM-based sentiment analysis and review classification
+- **Machine Learning:** Domain classification and relevance scoring using text similarity measures
+- **Multi-Provider LLM Integration:** Support for Claude, ChatGPT, Ollama, and Groq APIs
+- **Confidence-Based Filtering:** Review acceptance based on expertise level and domain relevance thresholds
+
+---
+
+## Installation & Setup
+
+### Prerequisites
+
+- Python 3.13.3 or latest
+- Git
+- LLM Provider Access (at least one of the following):
+  - Ollama (local) - _recommended for development_
+  - Anthropic Claude
+  - OpenAI ChatGPT
+  - Groq
+
+### Setup Instructions
+
+**1. Clone the repository**
+
+```bash
+git clone https://github.com/Pro19/kos-opengeneva-sparkboard-review-system
+
+cd kos-opengeneva-sparkboard-review-system
+```
+
+**2. Create virtual environment**
+
+```bash
+python -m venv .venv        # linux
+```
+
+**3. Install dependencies**
+
+```bash
+pip install -r requirements.txt
+```
+
+**4. Configure LLM Provider**
+
+```bash
+# Install Ollama (if not already installed)
+./scripts/install-ollama.bash   # linux
+
+# Pull a model (e.g., DeepSeek R1)
+ollama pull deepseek-r1:1.5b
+```
+
+Edit `src/infrastructure/config.py` to configure your preferred LLM provider:
+
+**Example provider: Ollama (Local, Free)**
+
+Install Ollama using the provided script:
+
+```bash
+# linux only
+chmod +x scripts/install-ollama.bash
+./scripts/install-ollama.bash
+
+# pull a model
+ollama pull deepseek-r1:1.5b
+# or
+ollama pull llama3
+
+ollama serve  # usually runs on localhost:11434
+```
+
+Update config (default):
 
 ```python
 LLM_CONFIG = {
-    "provider": "ollama",  # Choose between "claude", "chatgpt", or "ollama"
-    
-    "ollama": {
-        "base_url": "http://localhost:11434",  # Default Ollama API URL
-        "model": "llama3",  # Choose your available model
-        "max_tokens": 1000
-    },
-    
-    "claude": {
-        "api_key": "YOUR_ANTHROPIC_API_KEY",
-        "model": "claude-3-opus-20240229",
-        "max_tokens": 1000
-    },
-    
-    "chatgpt": {
-        "api_key": "YOUR_OPENAI_API_KEY",
-        "model": "gpt-4-turbo", 
-        "max_tokens": 1000
-    },
+    "provider": "ollama",
 
-    "groq": {
-        "api_key": "YOUR_GROQ_API_KEY",
-        "base_url": "https://api.groq.com/openai",
-        "model": "llama3-70b-8192",
-        "max_tokens": 1000
+    "ollama": {
+        "base_url": "http://localhost:11434",
+        "model": "deepseek-r1:1.5b"
     }
 }
 ```
 
-### LLM Provider CLI Utility
-
-A command-line utility is included to manage and test different LLM providers:
+**Test LLM configuration**
 
 ```bash
-# Show current configuration
-python llm_cli.py config
+# python -m src.cli.llm_cli test <provider_name>
 
-# Set default provider
-python llm_cli.py set ollama
-
-# Test a provider
-python llm_cli.py test ollama
+python -m src.cli.llm_cli test ollama
 ```
 
-## Running the System
+---
 
-### Testing with Sample Projects
+## Ontology & Data Structure
 
-To run the system with the included test projects:
+### Ontology Design
+
+Our ontology is structured around five core components:
+
+**1. Domains (`hr:Domain`)**
+
+- _Technical_: Programming, software engineering, hardware development
+- _Clinical_: Medical/healthcare expertise, patient care, diagnosis
+- _Administrative_: Healthcare administration, policy, management
+- _Business_: Market analysis, commercialization, entrepreneurship
+- _Design_: UI/UX design, visual design, interaction design
+- _User Experience_: User research, accessibility, behavior analysis
+
+**2. Expertise Levels (`hr:ExpertiseLevel`)**
+
+Based on confidence scores (0-100):
+
+- _Beginner (0-40)_: Basic understanding
+- _Skilled (41-70)_: Practical experience
+- _Talented (71-85)_: Deep understanding
+- _Seasoned (86-95)_: Extensive experience
+- _Expert (96-100)_: Top-level mastery
+
+**3. Impact Dimensions (`hr:ImpactDimension`)**
+
+- _Technical Feasibility_: Implementation difficulty with current technology
+- _Innovation_: Novelty and uniqueness of approach
+- _Impact_: Potential effect on target problem/domain
+- _Implementation Complexity_: Practical deployment difficulty
+- _Scalability_: Ability to scale to wider implementation
+- _Return on Investment_: Expected benefits vs. costs
+
+**4. Project Types (`hr:ProjectType`)**
+
+Software, Hardware, Data, Process, Service
+
+**5. Review Dimensions Mapping**
+
+Each domain has relevant dimensions for focused evaluation:
+
+- _Technical_: Technical Feasibility, Implementation Complexity, Scalability, Innovation
+- _Clinical_: Impact, Implementation Complexity, Technical Feasibility
+- _Business_: ROI, Scalability, Impact
+
+### Data Schema
+
+The system uses both file-based storage (for CLI) and SQLite database (for API):
+
+```sql
+Projects: project_id, name, description, work_done, status
+Reviews: review_id, project_id, reviewer_name, text_review, confidence_score
+ProcessingJobs: job_id, project_id, status, progress
+FeedbackReports: report_id, project_id, feedback_scores, final_review
+```
+
+## File Structure
+
+```
+kos-opengeneva-sparkboard-review-system/
+├── README.md                         # This comprehensive documentation
+├── requirements.txt                  # Python dependencies
+├── .gitignore                        # Git ignore rules
+│
+├── scripts/                          # Installation and utility scripts
+│   ├── install-ollama.bash           # Ollama installation script (Linux)
+│   └── run_api.py                    # API server startup script
+│
+├── src/                              # Main source code
+│   ├── api/                          # REST API implementation
+│   │   ├── __init__.py
+│   │   ├── app.py                    # FastAPI application
+│   │   ├── models.py                 # SQLAlchemy & Pydantic models
+│   │   ├── processing.py             # Background processing tasks
+│   │   └── scalar_fastapi.py         # API documentation integration
+│   │
+│   ├── cli/                          # Command-line interface
+│   │   ├── __init__.py
+│   │   ├── main.py                   # CLI entry point
+│   │   └── llm_cli.py                # LLM provider management
+│   │
+│   ├── core/                         # Core logic
+│   │   ├── __init__.py
+│   │   ├── ontology.py               # Ontology management
+│   │   ├── project.py                # Project data structures
+│   │   ├── reviewer.py               # Reviewer profiling
+│   │   ├── review.py                 # Review analysis
+│   │   └── feedback.py               # Feedback generation
+│   │
+│   └── infrastructure/               # Infrastructure & utilities
+│       ├── __init__.py
+│       ├── config.py                 # Configuration settings
+│       ├── database.py               # Database setup
+│       ├── llm_interface.py          # LLM provider interface
+│       ├── logging_utils.py          # Logging configuration
+│       └── utils.py                  # Utility functions
+│
+├── data/                             # Ontology and reference data
+│   ├── ontology.json                 # JSON ontology definition
+│   └── ontology.ttl                  # RDF/TTL ontology format
+│
+├── docs/                             # Documentation
+│   ├── api.md                        # REST API documentation
+│   └── uninstall-ollama.md           # Ollama uninstallation guide
+│
+├── projects/                         # Sample project data (CLI mode)
+│   └── [project_directories]/        # Individual project folders
+```
+
+- **Core Logic (`src/core/`):** Domain-specific business logic for ontology, reviews, and feedback
+- **API Layer (`src/api/`):** REST API with OpenAPI documentation
+- **CLI Interface (`src/cli/`):** Command-line tools for batch processing
+- **Infrastructure (`src/infrastructure/`):** Project wide features like logging, database, LLM integration
+- **Ontology Data (`data/`):** Structured knowledge representation in JSON and RDF formats
+- **Documentation (`docs/`):** Technical documentation and guides
+
+---
+
+## Usage Instructions
+
+### CLI Version:
 
 ```bash
-python run_test.py
+# process all projects in the projects/ directory
+python -m src.cli.main
+
+# process a specific project
+python -m src.cli.main --project <project_id>
+
+# create new ontology
+python -m src.cli.main --new-ontology
+
+# custom output directory
+python -m src.cli.main --output custom_output/
 ```
 
-This script will:
-1. Set up the test environment with sample projects
-2. Update the configuration to use the test projects directory
-3. Run the main program and generate feedback reports in the `output` directory
+For CLI usage, organize projects as:
 
-### Regular Usage
+```
+projects/
+├── project1/
+│   ├── description.md
+│   ├── review1.md
+│   └── review2.md
+└── project2/
+    ├── description.md
+    └── review1.md
+```
 
-For regular usage with your own projects:
+### GUI Version:
+
+A simple GUI application is included to analyze the project and visualize the ontology + project reviews:
 
 ```bash
-python main.py
+python gui.py
 ```
 
-Additional options:
-- `--project PROJECT_ID`: Process a specific project
-- `--output OUTPUT_DIR`: Specify output directory
-- `--new-ontology`: Create a new ontology instead of loading existing one
+### REST API Version:
 
-Example:
 ```bash
-python main.py --project ai-health-assistant --output results
+# start the API server
+python scripts/run_api.py
+
+# or directly with uvicorn
+uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-## Advanced Usage: LLM Factory
+API Documentation will be available at:
 
-For more advanced control over LLM interactions, you can use the `LLMFactory` class:
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+- Scalar: http://localhost:8000/scalar (prefer this)
+- OpenAPI JSON: http://localhost:8000/openapi.json
 
-```python
-from llm_factory import LLMFactory
+## References & Acknowledgments
 
-# Create an LLM factory
-llm = LLMFactory()
+### Academic References
 
-# Get a response using the default provider
-response = llm.get_response("What is ontology in computer science?")
+### Acknowledgments
 
-# Get a response from a specific provider
-response = llm.get_response(
-    "Explain machine learning",
-    provider="ollama",
-    model="llama3",
-    max_tokens=500
-)
+Special thanks to:
 
-# Switch the default provider
-llm.set_default_provider("claude")
-```
-
-## System Features
-
-- **Flexible LLM backend**: Use local models via Ollama or cloud APIs
-- **Ontology-driven analysis**: Structured representation of domains, expertise, and feedback dimensions
-- **Reviewer classification**: Identification of reviewer domain expertise and relevance
-- **Multi-perspective feedback**: Analysis of projects from diverse stakeholder viewpoints
-- **Artificial review generation**: AI-generated reviews for missing domain perspectives
-- **Comprehensive reports**: Detailed feedback with multi-dimensional scoring
-
-## Notes
-
-- When using Ollama, ensure the Ollama service is running locally
-- API keys for Claude and ChatGPT should be stored securely (not hardcoded in the config file)
-- The system assumes all reviews follow the specified format
+- Professor and TA of D400006 for guidance on knowledge organization systems (Thomas and Tibaut)
+- Maintainer of OpenGeneva Sparkboard (Matt)
+- Our team members for collaborative development
