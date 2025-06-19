@@ -67,7 +67,9 @@ cd kos-opengeneva-sparkboard-review-system
 ```
 **2. Create virtual environment**
 ```bash
-python -m venv .venv        # linux
+python -m venv .venv
+
+source .venv/bin/activate   # activate the virtual environment
 ```
 
 **3. Install dependencies**
