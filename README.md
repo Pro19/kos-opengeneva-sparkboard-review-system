@@ -1,16 +1,3 @@
-# Ontology-Driven AI for Multi-Perspective Peer Review
-
-This repository contains an implementation of an ontology-driven AI system for analyzing hackathon project reviews from multiple perspectives, with flexible LLM provider support.
-
-## Installation
-
-1. Clone this repository:
-
-   ```bash
-   git clone https://github.com/your-username/hackathon-review-system.git
-   cd hackathon-review-system
-   ```
-
 # OpenGeneva Sparkboard: Ontology-Driven AI for Multi-Perspective Peer Review in Hackathons
 
 ## Team Information
@@ -88,14 +75,7 @@ cd kos-opengeneva-sparkboard-review-system
 python -m venv .venv        # linux
 ```
 
-2. Create and activate a virtual environment (recommended):
-
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows, use: venv\Scripts\activate
-   ```
-
-   **3. Install dependencies**
+**3. Install dependencies**
 
 ```bash
 pip install -r requirements.txt
@@ -134,32 +114,9 @@ Update config (default):
 
 ```python
 LLM_CONFIG = {
-    "provider": "ollama",  # Choose between "claude", "chatgpt", or "ollama"
-
+    "provider": "ollama",
 
     "ollama": {
-        "base_url": "http://localhost:11434",  # Default Ollama API URL
-        "model": "llama3",  # Choose your available model
-        "max_tokens": 1000
-    },
-
-    "claude": {
-        "api_key": "YOUR_ANTHROPIC_API_KEY",
-        "model": "claude-3-opus-20240229",
-        "max_tokens": 1000
-    },
-
-    "chatgpt": {
-        "api_key": "YOUR_OPENAI_API_KEY",
-        "model": "gpt-4-turbo",
-        "max_tokens": 1000
-    },
-
-    "groq": {
-        "api_key": "YOUR_GROQ_API_KEY",
-        "base_url": "https://api.groq.com/openai",
-        "model": "llama3-70b-8192",
-        "max_tokens": 1000
         "base_url": "http://localhost:11434",
         "model": "deepseek-r1:1.5b"
     }
@@ -169,53 +126,10 @@ LLM_CONFIG = {
 **Test LLM configuration**
 
 ```bash
-# Show current configuration
-python llm_cli.py config
-
-# Set default provider
-python llm_cli.py set ollama
-
-# Test a provider
-python llm_cli.py test ollama
-```
-
-## Running the System
-
-### Testing with Sample Projects
-
-To run the system with the included test projects:
-
-```bash
-python run_test.py
-```
-
-This script will:
-
-1. Set up the test environment with sample projects
-2. Update the configuration to use the test projects directory
-3. Run the main program and generate feedback reports in the `output` directory
-
-### Regular Usage
-
-For regular usage with your own projects:
-
-```bash
-python main.py
-```
-
-Additional options:
-
-- `--project PROJECT_ID`: Process a specific project
-- `--output OUTPUT_DIR`: Specify output directory
-- `--new-ontology`: Create a new ontology instead of loading existing one
-
-Example:
-
 # python -m src.cli.llm_cli test <provider_name>
 
 python -m src.cli.llm_cli test ollama
-
-````
+```
 
 ---
 
@@ -237,6 +151,7 @@ Our ontology is structured around five core components:
 **2. Expertise Levels (`hr:ExpertiseLevel`)**
 
 Based on confidence scores (0-100):
+
 - _Beginner (0-40)_: Basic understanding
 - _Skilled (41-70)_: Practical experience
 - _Talented (71-85)_: Deep understanding
@@ -267,12 +182,13 @@ Each domain has relevant dimensions for focused evaluation:
 ### Data Schema
 
 The system uses both file-based storage (for CLI) and SQLite database (for API):
+
 ```sql
 Projects: project_id, name, description, work_done, status
 Reviews: review_id, project_id, reviewer_name, text_review, confidence_score
 ProcessingJobs: job_id, project_id, status, progress
 FeedbackReports: report_id, project_id, feedback_scores, final_review
-````
+```
 
 ## File Structure
 
@@ -365,6 +281,14 @@ projects/
 └── project2/
     ├── description.md
     └── review1.md
+```
+
+### GUI Version:
+
+A simple GUI application is included to analyze the project and visualize the ontology + project reviews:
+
+```bash
+python gui.py
 ```
 
 ### REST API Version:
