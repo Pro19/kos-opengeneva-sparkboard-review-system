@@ -78,7 +78,7 @@ FEEDBACK_SETTINGS = {
 # File paths and directories
 PATHS = {
     "projects_dir": "projects/",
-    "ontology_file": "ontology.json",
+    "ontology_file": "data/ontology.json",
     "output_dir": "output/",
     "visualizations_dir": "output/visualizations/",
     "logs_dir": "logs/"
