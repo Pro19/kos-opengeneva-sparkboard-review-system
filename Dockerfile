@@ -1,5 +1,5 @@
-# Use Python 3.10 as base image
-FROM python:3.10-slim
+# Use Python 3.15 as base image
+FROM python:3.13-slim
 
 # Set working directory
 WORKDIR /app
@@ -24,10 +24,10 @@ COPY . .
 RUN mkdir -p output logs results
 
 # Entry point
-ENTRYPOINT ["python", "main.py"]
+ENTRYPOINT ["python", "-m", "src.cli.main"]
 
 # Default command (can be overridden)
 CMD ["--output", "results"]
 
-
+# docker build -t hackathon-review-system .
 # docker run hackathon-review-system --project ai-health-assistant  

@@ -291,6 +291,21 @@ A simple GUI application is included to analyze the project and visualize the on
 python gui.py
 ```
 
+### Docker Version:
+
+#### build the Docker image
+
+```bash
+
+docker build -t hackathon-review-system .
+```
+
+#### run the Docker container
+
+docker run hackathon-review-system --project ai-health-assistant
+
+````
+
 ### REST API Version:
 
 ```bash
@@ -299,7 +314,7 @@ python scripts/run_api.py
 
 # or directly with uvicorn
 uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --reload
-```
+````
 
 API Documentation will be available at:
 
