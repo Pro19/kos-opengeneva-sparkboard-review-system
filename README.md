@@ -136,7 +136,6 @@ Update config (default):
 LLM_CONFIG = {
     "provider": "ollama",  # Choose between "claude", "chatgpt", or "ollama"
 
-    "provider": "ollama",
 
     "ollama": {
         "base_url": "http://localhost:11434",  # Default Ollama API URL
