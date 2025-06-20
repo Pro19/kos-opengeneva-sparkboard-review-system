@@ -51,6 +51,38 @@ projects/
     └── review1.md
 ```
 
+**Project description Markdown Template**:
+```markdown
+# Hackathon ID:
+...
+
+## Project Name:
+...
+
+## Project Description (max 400 words):
+...
+
+## Explain the work you've done so far:
+...
+
+```
+
+**Project Review Markdown Template**:
+```markdown
+# Reviewer name
+...
+
+## Links
+...
+
+## Text review of the project (max 400 words):
+...
+
+## Confidence score (0-100) _How much confidence do you have in your own review?_:
+...
+
+```
+
 ### Containerized
 
 ```bash
