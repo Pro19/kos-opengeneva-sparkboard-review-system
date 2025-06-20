@@ -2,3 +2,7 @@ temp/
 __pycache__/
 .venv/
 prompts/
+results/
+output/
+logs/
+hackathon_reviews.db
