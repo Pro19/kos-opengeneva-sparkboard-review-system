@@ -9,3 +9,5 @@ python-multipart==0.0.20
 aiosqlite==0.21.0
 asyncio==3.4.3
 uvicorn[standard]==0.34.3
+rdflib==7.1.4
+SPARQLWrapper==2.0.0

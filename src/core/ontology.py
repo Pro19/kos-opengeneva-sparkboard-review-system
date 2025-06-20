@@ -1,7 +1,3 @@
-"""
-Ontology management and generation for hackathon review system.
-"""
-
 import os
 import json
 from typing import Dict, List, Any, Optional
@@ -9,445 +5,210 @@ from typing import Dict, List, Any, Optional
 from src.infrastructure.config import PATHS, CORE_DOMAINS
 from src.infrastructure.llm_interface import generate_llm_response
 from src.infrastructure.logging_utils import logger
+from src.core.ontology_rdf import RDFOntology
+from src.core.dynamic_prompts import DynamicPromptGenerator
 
 class Ontology:
     """
-    Class for managing the ontology for the hackathon review system.
+    Updated ontology class that uses RDF/TTL backend with dynamic prompt generation.
     """
     
     def __init__(self, load_existing: bool = True):
         """
-        Initialize the ontology.
+        Initialize the ontology with RDF backend.
         
         Args:
             load_existing: Whether to load an existing ontology file
         """
-        self.ontology_path = PATHS.get("ontology_file", "ontology.json")
+        self.ttl_path = PATHS.get("ontology_ttl", "data/ontology.ttl")
+        self.json_path = PATHS.get("ontology_file", "data/ontology.json")  # Keep for backward compatibility
         
-        if load_existing and os.path.exists(self.ontology_path):
-            self.load_ontology()
+        # Initialize RDF ontology
+        if load_existing and os.path.exists(self.ttl_path):
+            self.rdf_ontology = RDFOntology(self.ttl_path)
+            logger.info("Loaded RDF ontology from TTL file")
         else:
-            self.create_initial_ontology()
+            logger.warning(f"TTL file not found at {self.ttl_path}")
+            # Fallback to JSON if TTL doesn't exist
+            self._load_from_json_fallback()
+        
+        # Initialize dynamic prompt generator
+        self.prompt_generator = DynamicPromptGenerator(self.rdf_ontology)
+        
+        # Cache for compatibility with existing code
+        self._json_cache = None
     
-    def load_ontology(self) -> None:
-        """Load the ontology from file."""
-        try:
-            with open(self.ontology_path, 'r') as file:
-                self.ontology = json.load(file)
-        except (json.JSONDecodeError, FileNotFoundError):
-            logger.error(f"Error loading ontology from {self.ontology_path}, creating new one.")
-            self.create_initial_ontology()
+    def _load_from_json_fallback(self):
+        """Fallback to load from JSON and convert to RDF if TTL doesn't exist."""
+        if os.path.exists(self.json_path):
+            logger.info("Loading from JSON as fallback and converting to RDF")
+            with open(self.json_path, 'r') as f:
+                json_data = json.load(f)
+            
+            # Convert JSON to RDF (implementation needed)
+            self._convert_json_to_rdf(json_data)
+        else:
+            raise FileNotFoundError(f"Neither TTL ({self.ttl_path}) nor JSON ({self.json_path}) ontology found")
+    
+    def _convert_json_to_rdf(self, json_data: Dict[str, Any]):
+        """Convert JSON ontology to RDF format."""
+        # This would implement conversion from existing JSON to RDF
+        # For now, create empty RDF ontology
+        self.rdf_ontology = RDFOntology()
+        logger.warning("JSON to RDF conversion not yet implemented")
+    
+    @property
+    def ontology(self) -> Dict[str, Any]:
+        """
+        Backward compatibility property that returns JSON-like structure.
+        """
+        if self._json_cache is None:
+            self._json_cache = self._rdf_to_json()
+        return self._json_cache
+    
+    def _rdf_to_json(self) -> Dict[str, Any]:
+        """Convert RDF ontology to JSON structure for backward compatibility."""
+        domains = {}
+        for domain in self.rdf_ontology.get_domains():
+            domains[domain["id"]] = {
+                "name": domain["name"],
+                "description": domain["description"],
+                "keywords": domain["keywords"],
+                "subdomains": domain["subdomains"]
+            }
+        
+        dimensions = {}
+        for dim in self.rdf_ontology.get_impact_dimensions():
+            dimensions[dim["id"]] = {
+                "name": dim["name"],
+                "description": dim["description"],
+                "scale": dim["scale"]
+            }
+        
+        levels = {}
+        for level in self.rdf_ontology.get_expertise_levels():
+            levels[level["id"]] = {
+                "name": level["name"],
+                "description": level["description"],
+                "confidence_range": level["confidence_range"]
+            }
+        
+        types = {}
+        for ptype in self.rdf_ontology.get_project_types():
+            types[ptype["id"]] = {
+                "name": ptype["name"],
+                "description": ptype["description"],
+                "keywords": ptype["keywords"]
+            }
+        
+        # Build review dimensions mapping
+        review_dimensions = {}
+        for domain in self.rdf_ontology.get_domains():
+            domain_id = domain["id"]
+            relevant_dims = self.rdf_ontology.get_relevant_dimensions_for_domain(domain_id)
+            review_dimensions[domain_id] = relevant_dims
+        
+        return {
+            "domains": domains,
+            "impact_dimensions": dimensions,
+            "expertise_levels": levels,
+            "project_types": types,
+            "review_dimensions": review_dimensions
+        }
     
     def save_ontology(self) -> None:
-        """Save the ontology to file."""
-        with open(self.ontology_path, 'w') as file:
-            json.dump(self.ontology, file, indent=2)
-    
-    def create_initial_ontology(self) -> None:
-        """Create an initial ontology structure."""
-        self.ontology = {
-            "domains": self._generate_domains(),
-            "project_types": self._generate_project_types(),
-            "impact_dimensions": self._generate_impact_dimensions(),
-            "expertise_levels": self._generate_expertise_levels(),
-            "review_dimensions": self._generate_review_dimensions(),
-        }
-        self.save_ontology()
-    
-    def _generate_domains(self) -> Dict[str, Dict[str, Any]]:
-        """Generate initial domain definitions."""
-        domains = {}
-        
-        # Core domains with definitions
-        domains["technical"] = {
-            "name": "Technical",
-            "description": "Expertise in programming, software engineering, hardware development, or technical implementation",
-            "keywords": ["programming", "software", "hardware", "development", "engineering", "technical", "code"],
-            "subdomains": {
-                "frontend": {"name": "Frontend Development", "keywords": ["UI", "UX", "web", "mobile", "frontend"]},
-                "backend": {"name": "Backend Development", "keywords": ["server", "database", "API", "backend"]},
-                "data_science": {"name": "Data Science", "keywords": ["machine learning", "AI", "data", "analytics"]},
-                "devops": {"name": "DevOps", "keywords": ["deployment", "infrastructure", "cloud", "CI/CD"]}
-            }
-        }
-        
-        domains["clinical"] = {
-            "name": "Clinical",
-            "description": "Medical or healthcare expertise related to patient care, diagnosis, or treatment",
-            "keywords": ["medical", "healthcare", "clinical", "patient", "diagnosis", "treatment", "doctor", "nurse"],
-            "subdomains": {
-                "primary_care": {"name": "Primary Care", "keywords": ["general practice", "family medicine"]},
-                "specialty": {"name": "Medical Specialties", "keywords": ["cardiology", "neurology", "oncology"]},
-                "nursing": {"name": "Nursing", "keywords": ["nurse", "patient care", "bedside"]},
-                "emergency": {"name": "Emergency Medicine", "keywords": ["emergency", "urgent care", "trauma"]}
-            }
-        }
-        
-        domains["administrative"] = {
-            "name": "Administrative",
-            "description": "Expertise in healthcare administration, policy, and management",
-            "keywords": ["administration", "management", "policy", "governance", "operations"],
-            "subdomains": {
-                "hospital_admin": {"name": "Hospital Administration", "keywords": ["hospital", "facility", "operations"]},
-                "health_policy": {"name": "Health Policy", "keywords": ["policy", "regulation", "compliance"]},
-                "operations": {"name": "Healthcare Operations", "keywords": ["workflow", "process", "efficiency"]}
-            }
-        }
-        
-        domains["business"] = {
-            "name": "Business",
-            "description": "Expertise in business models, market analysis, and commercialization",
-            "keywords": ["business", "market", "commercialization", "monetization", "startup", "entrepreneur"],
-            "subdomains": {
-                "strategy": {"name": "Business Strategy", "keywords": ["strategy", "planning", "vision"]},
-                "finance": {"name": "Finance", "keywords": ["funding", "investment", "revenue", "cost"]},
-                "marketing": {"name": "Marketing", "keywords": ["marketing", "branding", "growth"]},
-                "entrepreneurship": {"name": "Entrepreneurship", "keywords": ["startup", "venture", "founding"]}
-            }
-        }
-        
-        domains["design"] = {
-            "name": "Design",
-            "description": "Expertise in user interface, user experience, and visual design",
-            "keywords": ["design", "UI", "UX", "visual", "graphic", "user interface", "user experience"],
-            "subdomains": {
-                "ui_design": {"name": "UI Design", "keywords": ["interface", "visual", "graphic"]},
-                "ux_design": {"name": "UX Design", "keywords": ["experience", "interaction", "usability", "accessibility"]},
-                "service_design": {"name": "Service Design", "keywords": ["service", "journey", "touchpoint"]}
-            }
-        }
-        
-        domains["user_experience"] = {
-            "name": "User Experience",
-            "description": "Expertise in how users interact with products and services",
-            "keywords": ["user", "experience", "usability", "user testing", "user research", "human-computer interaction"],
-            "subdomains": {
-                "user_research": {"name": "User Research", "keywords": ["research", "interviews", "surveys", "testing"]},
-                "accessibility": {"name": "Accessibility", "keywords": ["accessible", "inclusion", "disability"]},
-                "behavior": {"name": "User Behavior", "keywords": ["behavior", "psychology", "cognitive"]}
-            }
-        }
-        
-        return domains
-    
-    def _generate_project_types(self) -> Dict[str, Dict[str, Any]]:
-        """Generate initial project type definitions."""
-        project_types = {
-            "software": {
-                "name": "Software",
-                "description": "Projects primarily focused on software solutions",
-                "keywords": ["app", "application", "software", "platform", "digital", "mobile", "web"]
-            },
-            "hardware": {
-                "name": "Hardware",
-                "description": "Projects involving physical devices or hardware components",
-                "keywords": ["device", "hardware", "physical", "wearable", "sensor", "equipment"]
-            },
-            "data": {
-                "name": "Data",
-                "description": "Projects centered around data collection, analysis, or visualization",
-                "keywords": ["data", "analytics", "visualization", "dashboard", "metrics", "statistics"]
-            },
-            "process": {
-                "name": "Process",
-                "description": "Projects focused on improving workflows or processes",
-                "keywords": ["process", "workflow", "procedure", "protocol", "method", "system"]
-            },
-            "service": {
-                "name": "Service",
-                "description": "Projects creating or improving service delivery",
-                "keywords": ["service", "delivery", "care", "support", "assistance", "help"]
-            }
-        }
-        return project_types
-    
-    def _generate_impact_dimensions(self) -> Dict[str, Dict[str, Any]]:
-        """Generate initial impact dimension definitions."""
-        impact_dimensions = {
-            "technical_feasibility": {
-                "name": "Technical Feasibility",
-                "description": "How technically feasible is the project to implement",
-                "scale": {
-                    "1": "Extremely difficult or impossible with current technology",
-                    "2": "Substantial technical challenges",
-                    "3": "Moderate technical challenges",
-                    "4": "Few technical challenges",
-                    "5": "Easily implementable with existing technology"
-                }
-            },
-            "innovation": {
-                "name": "Innovation",
-                "description": "How innovative or novel is the approach",
-                "scale": {
-                    "1": "Not innovative, duplicates existing solutions",
-                    "2": "Minor improvements to existing approaches",
-                    "3": "Moderate innovation with some novel aspects",
-                    "4": "Significantly innovative approach",
-                    "5": "Groundbreaking, completely novel approach"
-                }
-            },
-            "impact": {
-                "name": "Impact",
-                "description": "Potential impact on the target problem or domain",
-                "scale": {
-                    "1": "Minimal or no impact",
-                    "2": "Limited impact",
-                    "3": "Moderate impact",
-                    "4": "Significant impact",
-                    "5": "Transformative impact"
-                }
-            },
-            "implementation_complexity": {
-                "name": "Implementation Complexity",
-                "description": "Complexity of implementing the solution in practice",
-                "scale": {
-                    "1": "Extremely complex implementation",
-                    "2": "Highly complex implementation",
-                    "3": "Moderately complex implementation",
-                    "4": "Relatively simple implementation",
-                    "5": "Very straightforward implementation"
-                }
-            },
-            "scalability": {
-                "name": "Scalability",
-                "description": "Ability to scale to wider implementation",
-                "scale": {
-                    "1": "Not scalable beyond initial context",
-                    "2": "Limited scalability",
-                    "3": "Moderately scalable",
-                    "4": "Highly scalable",
-                    "5": "Extremely scalable with minimal effort"
-                }
-            },
-            "return_on_investment": {
-                "name": "Return on Investment",
-                "description": "Expected return relative to investment required",
-                "scale": {
-                    "1": "Poor ROI, costs greatly exceed benefits",
-                    "2": "Limited ROI, costs somewhat exceed benefits",
-                    "3": "Moderate ROI, benefits roughly equal costs",
-                    "4": "Good ROI, benefits exceed costs",
-                    "5": "Excellent ROI, benefits greatly exceed costs"
-                }
-            }
-        }
-        return impact_dimensions
-    
-    def _generate_expertise_levels(self) -> Dict[str, Dict[str, Any]]:
-        """Generate initial expertise level definitions."""
-        expertise_levels = {
-            "beginner": {
-                "name": "Beginner",
-                "description": "Basic understanding of the domain",
-                "confidence_range": [0, 40]
-            },
-            "skilled": {
-                "name": "Skilled",
-                "description": "Practical experience and good understanding of the domain",
-                "confidence_range": [41, 70]
-            },
-            "talented": {
-                "name": "Talented",
-                "description": "Deep understanding and significant experience in the domain",
-                "confidence_range": [71, 85]
-            },
-            "seasoned": {
-                "name": "Seasoned",
-                "description": "Extensive experience and comprehensive knowledge of the domain",
-                "confidence_range": [86, 95]
-            },
-            "expert": {
-                "name": "Expert",
-                "description": "Top-level expertise with mastery of the domain",
-                "confidence_range": [96, 100]
-            }
-        }
-        return expertise_levels
-    
-    def _generate_review_dimensions(self) -> Dict[str, List[str]]:
-        """Generate initial review dimension mappings by domain."""
-        review_dimensions = {
-            "technical": [
-                "technical_feasibility",
-                "implementation_complexity",
-                "scalability",
-                "innovation"
-            ],
-            "clinical": [
-                "impact",
-                "implementation_complexity",
-                "technical_feasibility"
-            ],
-            "administrative": [
-                "implementation_complexity",
-                "scalability",
-                "return_on_investment"
-            ],
-            "business": [
-                "return_on_investment",
-                "scalability",
-                "impact"
-            ],
-            "design": [
-                "innovation",
-                "impact",
-                "implementation_complexity"
-            ],
-            "user_experience": [
-                "impact",
-                "implementation_complexity",
-                "innovation"
-            ]
-        }
-        return review_dimensions
-    
-    def update_ontology_with_llm(self, context: str = "") -> None:
-        """
-        Update the ontology using an LLM model with additional context.
-        
-        Args:
-            context: Additional context to inform the ontology update
-        """
-        
-        # Skip this functionality as requested
-        logger.info("Skipping ontology update for now")
-        return
-        
-        # The original implementation is below for reference
-        # prompt = f"""
-        #     You are an expert in healthcare innovation and hackathons. You need to help update an ontology 
-        #     for a multi-perspective peer review system. The current ontology includes:
-        #     
-        #     1. Domains (e.g., technical, clinical, administrative)
-        #     2. Project types (e.g., software, hardware, data)
-        #     3. Impact dimensions (e.g., technical feasibility, innovation, impact)
-        #     4. Expertise levels (e.g., beginner, skilled, expert)
-        #     
-        #     Based on the following context, suggest improvements or additions to the ontology:
-        #     
-        #     {context}
-        #     
-        #     Provide your response as a JSON object with the following structure:
-        #     {{
-        #         "domains_to_add": [{{
-        #             "name": "domain_name",
-        #             "description": "domain_description",
-        #             "keywords": ["keyword1", "keyword2"]
-        #         }}],
-        #         "project_types_to_add": [{{
-        #             "name": "project_type_name",
-        #             "description": "project_type_description",
-        #             "keywords": ["keyword1", "keyword2"]
-        #         }}],
-        #         "impact_dimensions_to_add": [{{
-        #             "name": "dimension_name",
-        #             "description": "dimension_description",
-        #             "scale": {{
-        #                 "1": "description_of_1",
-        #                 "5": "description_of_5"
-        #             }}
-        #         }}]
-        #     }}
-        #     """
-        #
-        # from llm_interface import generate_llm_response
-        # response = generate_llm_response(prompt)  # Fix the order: prompt first, provider optional
-        # 
-        # try:
-        #     updates = json.loads(response)
-        #     
-        #     # Apply updates to the ontology
-        #     # ... (rest of the implementation)
-        #     
-        #     self.save_ontology()
-        #     logger.info("Ontology updated successfully with LLM suggestions.")
-        # except json.JSONDecodeError:
-        #     logger.error("Failed to parse LLM response as JSON.")
+        """Save the ontology to TTL file."""
+        self.rdf_ontology.save_ontology()
+        # Clear cache so it gets regenerated
+        self._json_cache = None
     
     def get_domains(self) -> List[str]:
-        """Get list of all domains in the ontology."""
-        return list(self.ontology.get("domains", {}).keys())
+        """Get list of all domain IDs."""
+        return [domain["id"] for domain in self.rdf_ontology.get_domains()]
     
     def get_domain_keywords(self, domain: str) -> List[str]:
         """Get keywords for a specific domain."""
-        domain_data = self.ontology.get("domains", {}).get(domain.lower(), {})
-        return domain_data.get("keywords", [])
+        domain_data = self.rdf_ontology.get_domain_by_id(domain)
+        return domain_data.get("keywords", []) if domain_data else []
     
     def get_expertise_level(self, confidence_score: int) -> str:
-        """
-        Determine expertise level based on confidence score.
-        
-        Args:
-            confidence_score: Confidence score (0-100)
-            
-        Returns:
-            Expertise level name
-        """
-        for level_id, level_data in self.ontology.get("expertise_levels", {}).items():
-            min_score, max_score = level_data.get("confidence_range", [0, 100])
-            if min_score <= confidence_score <= max_score:
-                return level_id
-        
-        return "beginner"  # Default to beginner if no match
+        """Determine expertise level based on confidence score."""
+        return self.rdf_ontology.get_expertise_level_by_confidence(confidence_score)
     
     def get_relevant_dimensions_for_domain(self, domain: str) -> List[str]:
-        """
-        Get relevant impact dimensions for a specific domain.
-        
-        Args:
-            domain: Domain name
-            
-        Returns:
-            List of dimension IDs relevant to the domain
-        """
-        return self.ontology.get("review_dimensions", {}).get(domain.lower(), [])
+        """Get relevant impact dimensions for a specific domain."""
+        return self.rdf_ontology.get_relevant_dimensions_for_domain(domain)
     
     def classify_project_type(self, project_description: str) -> str:
-        """
-        Classify a project into a project type based on its description.
-        
-        Args:
-            project_description: Text description of the project
-            
-        Returns:
-            Project type ID
-        """
-        best_match = None
-        best_score = 0
-        
-        for project_type_id, project_type_data in self.ontology.get("project_types", {}).items():
-            score = 0
-            for keyword in project_type_data.get("keywords", []):
-                if keyword.lower() in project_description.lower():
-                    score += 1
-            
-            if score > best_score:
-                best_score = score
-                best_match = project_type_id
-        
-        return best_match or "software"  # Default to software if no match
+        """Classify a project into a project type based on its description."""
+        return self.rdf_ontology.classify_project_type(project_description)
     
     def calculate_domain_relevance(self, project_description: str, domain: str) -> float:
-        """
-        Calculate relevance score of a domain to a project.
+        """Calculate relevance score of a domain to a project."""
+        return self.rdf_ontology.calculate_domain_relevance(project_description, domain)
+    
+    # New methods that leverage RDF capabilities
+    def add_domain(self, domain_id: str, name: str, description: str, 
+                   keywords: List[str], relevant_dimensions: List[str] = None) -> None:
+        """Add a new domain to the ontology."""
+        self.rdf_ontology.add_domain(domain_id, name, description, keywords)
         
-        Args:
-            project_description: Text description of the project
-            domain: Domain to check relevance for
+        if relevant_dimensions:
+            self.rdf_ontology.link_domain_to_dimensions(domain_id, relevant_dimensions)
+        
+        # Clear cache
+        self._json_cache = None
+        logger.info(f"Added new domain: {domain_id}")
+    
+    def add_impact_dimension(self, dimension_id: str, name: str, description: str, 
+                           scale: Dict[str, str]) -> None:
+        """Add a new impact dimension to the ontology."""
+        self.rdf_ontology.add_impact_dimension(dimension_id, name, description, scale)
+        
+        # Clear cache
+        self._json_cache = None
+        logger.info(f"Added new impact dimension: {dimension_id}")
+    
+    def update_ontology_with_llm(self, context: str = "") -> None:
+        """
+        Update the ontology using LLM suggestions based on context.
+        Now uses dynamic prompts from the ontology.
+        """
+        if not context:
+            logger.info("No context provided for ontology update, skipping")
+            return
+        
+        try:
+            # Use dynamic prompt generator
+            prompt = self.prompt_generator.generate_ontology_update_prompt(context)
+            response = generate_llm_response(prompt)
             
-        Returns:
-            Relevance score (0-1)
-        """
-        domain_data = self.ontology.get("domains", {}).get(domain.lower(), {})
-        keywords = domain_data.get("keywords", [])
-        
-        if not keywords:
-            return 0.0
-        
-        # Count keyword matches
-        match_count = 0
-        for keyword in keywords:
-            if keyword.lower() in project_description.lower():
-                match_count += 1
-        
-        return min(1.0, match_count / max(1, len(keywords) * 0.3))
+            # Parse and apply suggestions
+            suggestions = json.loads(response)
+            
+            # Apply new domains
+            for domain_data in suggestions.get("domains_to_add", []):
+                self.add_domain(
+                    domain_data["id"],
+                    domain_data["name"],
+                    domain_data["description"],
+                    domain_data["keywords"],
+                    domain_data.get("relevant_dimensions", [])
+                )
+            
+            # Apply new dimensions
+            for dim_data in suggestions.get("dimensions_to_add", []):
+                self.add_impact_dimension(
+                    dim_data["id"],
+                    dim_data["name"],
+                    dim_data["description"],
+                    dim_data["scale"]
+                )
+            
+            # Save changes
+            self.save_ontology()
+            
+            logger.info("Ontology updated successfully with LLM suggestions")
+            
+        except Exception as e:
+            logger.error(f"Failed to update ontology with LLM: {str(e)}")
