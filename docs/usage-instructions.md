@@ -1,12 +1,71 @@
 # Usage Instructions
 
-The Ontology-Driven Hackathon Review System provides three different interfaces:
+The Ontology-Driven Hackathon Review System provides multiple interfaces and deployment options:
+
+## Deployment Options:
+
+1. **Local Installation** - Direct Python installation for development and testing
+2. **Docker Container** - Containerized deployment for consistency and portability
+
+## Interface Options:
 
 1. **CLI Version** - Command-line interface for batch processing and automation
 2. **GUI Version** - Graphical user interface for interactive analysis (PyQt6-based)
 3. **REST API Version** - Web-based API with browser interface for remote access
 
-Choose the interface that best fits your workflow and requirements.
+Choose the deployment method and interface that best fits your workflow and requirements.
+
+---
+
+## Docker Version:
+
+### Building the Docker Image
+
+```bash
+# build the Docker image
+docker build -t hackathon-review-system .
+```
+
+### CLI Usage with Docker
+
+```bash
+# process all projects in the projects/ directory
+docker run -v $(pwd)/projects:/app/projects -v $(pwd)/output:/app/output hackathon-review-system
+
+# process a specific project
+docker run -v $(pwd)/projects:/app/projects -v $(pwd)/output:/app/output hackathon-review-system --project ai-health-assistant
+
+# create new ontology
+docker run -v $(pwd)/projects:/app/projects -v $(pwd)/output:/app/output hackathon-review-system --new-ontology
+
+# custom output directory with volume mapping
+docker run -v $(pwd)/projects:/app/projects -v $(pwd)/custom_output:/app/output hackathon-review-system --output /app/output
+
+# analyze ontology structure
+docker run hackathon-review-system --analyze-ontology
+
+# validate ontology consistency
+docker run hackathon-review-system --validate-ontology
+```
+
+### API Server with Docker
+
+```bash
+# start the API server in a container
+docker run -p 8000:8000 -v $(pwd)/projects:/app/projects -v $(pwd)/output:/app/output hackathon-review-system python scripts/run_api.py
+
+# or with docker-compose (if available)
+docker-compose up
+```
+
+### Volume Mapping Notes
+
+- `-v $(pwd)/projects:/app/projects` - Maps your local projects directory to the container
+- `-v $(pwd)/output:/app/output` - Maps your local output directory to preserve results
+- `-p 8000:8000` - Maps port 8000 for API access
+- Results and logs will be saved to your local directories through volume mapping
+
+---
 
 ## CLI Version:
 
@@ -34,6 +93,7 @@ python -m src.cli.main --backup-ontology
 ```
 
 For CLI usage, organize projects as:
+
 ```
 projects/
 ├── project1/
@@ -47,8 +107,10 @@ projects/
 
 ## GUI Version:
 
+**Note:** The GUI version requires a local installation with PyQt6. Docker containers do not support GUI applications without additional X11 forwarding configuration.
+
 ```bash
-# start the graphical user interface
+# start the graphical user interface (local installation only)
 python gui.py
 
 # or using the module path
