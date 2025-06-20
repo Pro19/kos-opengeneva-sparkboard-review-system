@@ -1,16 +1,8 @@
-"""
-Dynamic prompt generation from RDF ontology
-"""
-
 from typing import Dict, List, Any, Optional
 from src.infrastructure.logging_utils import logger
 
 
 class DynamicPromptGenerator:
-    """
-    Generates LLM prompts dynamically based on the RDF ontology.
-    """
-    
     def __init__(self, ontology):
         """
         Initialize the prompt generator with an ontology.

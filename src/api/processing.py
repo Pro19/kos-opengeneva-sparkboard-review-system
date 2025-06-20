@@ -1,14 +1,10 @@
-"""
-Updated background processing for project review analysis using RDF ontology.
-"""
-
 import uuid
 from datetime import datetime
 from typing import Dict, Any, List
 
 from src.infrastructure.database import get_db_context
 from src.api.models import Project, Review, ProcessingJob, FeedbackReport
-from src.core.ontology import Ontology  # Updated ontology with RDF backend
+from src.core.ontology import Ontology
 from src.core.reviewer import ReviewerProfile
 from src.core.review import ReviewAnalyzer
 from src.core.feedback import FeedbackGenerator
@@ -19,7 +15,7 @@ from src.infrastructure.llm_interface import (
 )
 from src.infrastructure.logging_utils import logger
 
-# Processing steps (updated for RDF ontology)
+# Processing steps
 PROCESSING_STEPS = [
     "loading_project",
     "initializing_ontology",

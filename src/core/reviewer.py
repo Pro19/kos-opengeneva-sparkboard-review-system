@@ -1,7 +1,3 @@
-"""
-Updated reviewer classification and profiling using RDF ontology and dynamic prompts.
-"""
-
 import os
 import re
 from typing import Dict, List, Any, Optional
@@ -11,8 +7,6 @@ from src.infrastructure.config import REVIEW_THRESHOLDS
 from src.infrastructure.llm_interface import classify_reviewer_domain
 
 class ReviewerProfile:
-    """Class for managing reviewer profiles and expertise assessment using RDF ontology."""
-    
     def __init__(self, ontology):
         """
         Initialize the reviewer profiler.
@@ -123,7 +117,7 @@ class ReviewerProfile:
             Enhanced domain or None if no enhancement needed
         """
         # This is a placeholder for actual external data analysis
-        # In a real implementation, you would analyze LinkedIn titles, GitHub repos, etc.
+        # In a real implementation, we would analyze LinkedIn titles, GitHub repos, etc.
         
         # For example, if LinkedIn shows "Software Engineer", reinforce technical domain
         linkedin_data = external_data.get('linkedin', {})

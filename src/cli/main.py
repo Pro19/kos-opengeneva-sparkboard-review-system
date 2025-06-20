@@ -1,14 +1,9 @@
-"""
-Updated main entry point for the ontology-driven hackathon review system.
-Now uses RDF ontology backend.
-"""
-
 import os
 import argparse
 import json
 from typing import Dict, List, Any, Optional
 
-from src.core.ontology import Ontology  # Updated with RDF backend
+from src.core.ontology import Ontology
 from src.core.project import Project, load_all_projects
 from src.core.reviewer import ReviewerProfile
 from src.core.review import ReviewAnalyzer
@@ -21,7 +16,7 @@ def check_requirements():
     from src.infrastructure.logging_utils import logger
     
     # Required dependencies
-    required = ["requests", "sklearn", "rdflib"]  # Added rdflib for RDF support
+    required = ["requests", "sklearn", "rdflib"]
     missing_required = []
     
     # Optional dependencies

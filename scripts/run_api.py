@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-"""
-Script to run the REST API server
-"""
-
 import os
 import sys
 import uvicorn
@@ -39,7 +34,6 @@ def main():
     print(f"  - Web UI: http://localhost:{port}/ui")
     print()
     
-    # Run the server using import string for reload support
     uvicorn.run(
         "src.api.app:app",  # Use import string for reload support
         host=host,

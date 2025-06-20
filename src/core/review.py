@@ -1,8 +1,3 @@
-"""
-Updated review analysis and filtering for hackathon review system.
-Now uses RDF ontology and dynamic prompt generation.
-"""
-
 from typing import Dict, List, Any, Optional
 from collections import defaultdict
 import time
@@ -16,9 +11,7 @@ from src.infrastructure.llm_interface import (
 from src.infrastructure.logging_utils import logger
 from src.infrastructure.config import LLM_CONFIG
 
-class ReviewAnalyzer:
-    """Class for analyzing and processing project reviews using RDF ontology."""
-    
+class ReviewAnalyzer:    
     def __init__(self, ontology, reviewer_profiler):
         """
         Initialize the review analyzer.

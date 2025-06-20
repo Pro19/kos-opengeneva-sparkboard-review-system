@@ -9,9 +9,7 @@ from typing import Dict, List, Any, Optional
 from src.infrastructure.utils import parse_markdown_file
 from src.infrastructure.config import PATHS
 
-class Project:
-    """Class representing a hackathon project."""
-    
+class Project:    
     def __init__(self, project_id: str, project_dir: str):
         """
         Initialize a project.

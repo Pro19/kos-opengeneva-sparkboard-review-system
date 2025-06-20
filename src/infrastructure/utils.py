@@ -1,7 +1,3 @@
-"""
-Utility functions for the hackathon review system.
-"""
-
 import os
 import re
 import json

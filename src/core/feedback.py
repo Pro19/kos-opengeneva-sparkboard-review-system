@@ -1,8 +1,3 @@
-"""
-Updated feedback generation for hackathon review system.
-Now uses RDF ontology for dynamic dimensions and prompts.
-"""
-
 import os
 from typing import Dict, List, Any, Optional
 import json
@@ -11,9 +6,7 @@ import numpy as np
 from src.infrastructure.config import FEEDBACK_SETTINGS
 from src.infrastructure.utils import remove_thinking_tags
 
-class FeedbackGenerator:
-    """Class for generating final feedback and visualizations using RDF ontology."""
-    
+class FeedbackGenerator:    
     def __init__(self, ontology):
         """
         Initialize the feedback generator.
@@ -32,7 +25,7 @@ class FeedbackGenerator:
     
     def generate_feedback_report(self, project, output_dir: str = "output") -> str:
         """
-        Generate a comprehensive feedback report for a project using dynamic ontology.
+        Generate a feedback report for a project using ontology.
         
         Args:
             project: Project object
@@ -80,7 +73,7 @@ class FeedbackGenerator:
     
     def _prepare_report_data(self, project) -> Dict[str, Any]:
         """
-        Prepare data structure for the feedback report using dynamic ontology.
+        Prepare data structure for the feedback report.
         
         Args:
             project: Project object
@@ -167,7 +160,7 @@ class FeedbackGenerator:
     
     def _generate_markdown_report(self, report_data: Dict[str, Any]) -> str:
         """
-        Generate a markdown format report with enhanced ontology information.
+        Generate a markdown format report.
         
         Args:
             report_data: Dictionary with report data

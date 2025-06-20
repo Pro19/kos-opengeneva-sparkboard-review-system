@@ -36,7 +36,7 @@
 
 ### Overview
 
-This project is an innovative *RDF/TTL ontology-driven** AI system designed to enhance the depth and utility of peer review systems in hackathon environments. Rather than relying on simplistic ranking scales, our approach leverages structured knowledge representation to capture both reviewer characteristics and feedback dimensions, enabling comprehensive multi-perspective analysis of hackathon projects.
+This project is an innovative **RDF/TTL ontology-driven** AI system designed to enhance the depth and utility of peer review systems in hackathon environments. Rather than relying on simplistic ranking scales, our approach leverages structured knowledge representation to capture both reviewer characteristics and feedback dimensions, enabling comprehensive multi-perspective analysis of hackathon projects.
 
 ### State-of-the-Art & Problem Statement
 
