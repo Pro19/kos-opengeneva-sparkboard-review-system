@@ -1,12 +1,9 @@
-"""
-Configuration settings for the hackathon review system.
-"""
-
 # General settings
 SETTINGS = {
-    "update_ontology": False,  # Whether to update ontology with LLM
+    "update_ontology": False,   # Enable ontology updates with LLM
     "generate_charts": True,   # Whether to generate visualization charts
     "artificial_reviews": True, # Whether to generate artificial reviews for missing domains
+    "use_rdf_ontology": True,  # Use RDF/TTL backend instead of JSON
 }
 
 # Logging configuration
@@ -16,85 +13,80 @@ LOGGING_CONFIG = {
     "console_logging": True
 }
 
-
 # LLM API configuration
 LLM_CONFIG = {
-    "provider": "ollama",  # Choose between "claude", "chatgpt", or "ollama"
-    "max_retries": 3,      # Number of retries for API calls
-    "retry_delay": 2,      # Delay between retries in seconds
+    "provider": "ollama",  # Switched to Groq as mentioned in presentation
+    "max_retries": 3,
+    "retry_delay": 2,
     
     "claude": {
         "api_key": "YOUR_ANTHROPIC_API_KEY",
         "model": "claude-3-opus-20240229",
-        "max_tokens": 1000
+        "max_tokens": 2000  # Increased for dynamic prompts
     },
     
     "chatgpt": {
         "api_key": "YOUR_OPENAI_API_KEY",
         "model": "gpt-4-turbo",
-        "max_tokens": 1000
+        "max_tokens": 2000
     },
     
     "ollama": {
-        "base_url": "http://localhost:11434",  # Default Ollama API URL
-        "model": "deepseek-r1:1.5b",  # Choose your available model (llama3, mistral, etc.)
-        "max_tokens": 1000
+        "base_url": "http://localhost:11434",
+        "model": "deepseek-r1:1.5b",
+        "max_tokens": 2000
     },
 
     "groq": {
-        "api_key": "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",
-        "base_url": "https://api.groq.com/openai/v1/",  # Groq API URL
-        "model": "llama3-70b-8192",  # Default Groq model
-        "max_tokens": 1000
+        "api_key": "YOUR_GROQ_API_KEY",
+        "base_url": "https://api.groq.com/openai/v1/",
+        "model": "llama3-70b-8192",
+        "max_tokens": 2000
     }
 }
 
 # Review filtering thresholds
 REVIEW_THRESHOLDS = {
-    "min_confidence_score": 40,  # Minimum confidence score to consider review
-    "min_domain_relevance": 0.3,  # Minimum domain relevance score (0-1)
-    "expert_confidence_threshold": 80,  # Threshold to consider a reviewer an expert
-    "domain_relevance_threshold": 0.2  # For generating artificial reviews
+    "min_confidence_score": 40,
+    "min_domain_relevance": 0.3,
+    "expert_confidence_threshold": 80,
+    "domain_relevance_threshold": 0.2
 }
 
-# Feedback generation settings
+# Feedback generation settings - now dynamic from ontology
 FEEDBACK_SETTINGS = {
-    "dimensions": [
-        "technical_feasibility",
-        "innovation",
-        "impact",
-        "implementation_complexity",
-        "scalability",
-        "return_on_investment"
-    ],
     "chart": {
         "type": "radar",
-        "width": 8,
-        "height": 6,
+        "width": 10,
+        "height": 8,
         "dpi": 300
-    }
+    },
+    # Note: dimensions are now loaded dynamically from ontology
+    "use_dynamic_dimensions": True
 }
 
 # File paths and directories
 PATHS = {
     "projects_dir": "projects/",
-    "ontology_file": "ontology.json",
+    "ontology_file": "data/ontology.json",      # Kept for backward compatibility
+    "ontology_ttl": "data/ontology.ttl",        # Primary ontology file (RDF/TTL)
     "output_dir": "output/",
     "visualizations_dir": "output/visualizations/",
-    "logs_dir": "logs/"
+    "logs_dir": "logs/",
+    "data_dir": "data/"
 }
 
-# List of domains to ensure coverage in reviews
+# Core domains - loaded from ontology but kept for initial validation
 CORE_DOMAINS = [
     "technical",
-    "clinical",
+    "clinical", 
     "administrative",
     "business",
     "design",
     "user_experience"
 ]
 
-# Default values for sentiment analysis
+# Default values for sentiment analysis - is dynamic but kept as fallback
 DEFAULT_SENTIMENT_SCORES = {
     "technical_feasibility": 3.0,
     "innovation": 3.0,
@@ -105,29 +97,35 @@ DEFAULT_SENTIMENT_SCORES = {
     "overall_sentiment": 3.0
 }
 
-# LLM prompts templates
-LLM_PROMPTS = {
-    "generate_final_review": """
-    You are an expert reviewer synthesizing multiple perspectives on a hackathon project.
-    
-    Project: {project_name}
-    Description: {project_description}
-    
-    Based on reviewer feedback, the project has received the following scores (on a scale of 1-5):
-    {dimension_scores}
-    
-    Domain-specific insights:
-    {domain_insights}
-    
-    Please synthesize these perspectives into a comprehensive final review of the project.
-    The review should:
-    1. Highlight the project's strengths and weaknesses
-    2. Discuss different perspectives from various domains
-    3. Provide constructive suggestions for improvement
-    4. Summarize the overall assessment
-    
-    Keep the review balanced, constructive, and actionable. Length should be about 400-500 words.
-    """,
-    
-    # Add other prompts here...
+# RDF/SPARQL Configuration
+RDF_CONFIG = {
+    "namespaces": {
+        "hr": "http://example.org/hackathon-review/",
+        "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+        "owl": "http://www.w3.org/2002/07/owl#",
+        "xsd": "http://www.w3.org/2001/XMLSchema#"
+    },
+    "query_timeout": 30,  # seconds
+    "cache_queries": True
+}
+
+# Dynamic prompt configuration
+PROMPT_CONFIG = {
+    "max_prompt_length": 4000,  # characters
+    "include_examples": True,
+    "context_window": 2000,     # characters for context in prompts
+    "temperature": 0.7,         # for LLM generation
+}
+
+# API Configuration
+API_CONFIG = {
+    "title": "Ontology-Driven Hackathon Review API",
+    "description": "AI-powered multi-perspective peer review system using RDF ontology",
+    "version": "2.0.0",
+    "cors_origins": ["*"],
+    "rate_limit": {
+        "requests_per_minute": 60,
+        "burst_size": 10
+    }
 }

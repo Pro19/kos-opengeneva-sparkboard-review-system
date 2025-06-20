@@ -6,10 +6,30 @@
 
 **Team Members:**
 
-- Eisha Tir Raazia
-- Mahidhar Reddy Vaka
-- Oussama Rattazi
-- Pranshu Mishra
+- Eisha Tir Raazia - Eisha.Raazia@etu.unige.ch
+- Mahidhar Reddy Vaka - Mahidhar.Vaka@etu.unige.ch
+- Oussama Rattazi - Oussama.Rattazi@etu.unige.ch
+- Pranshu Mishra - Pranshu.Mishra@etu.unige.ch
+
+---
+
+## Documentation
+
+- [Project Description](#project-description)
+  - [Key Features](#key-features)
+  - [Screenshots](./docs/screenshots.md)
+- [Installation & Setup](./docs/installation-setup.md)
+- [Ontology & Data Structure](./docs/ontology-data-structure.md)
+- [Usage Instructions](./docs/usage-instructions.md)
+  - [CLI](./docs/usage-instructions.md#cli-version)
+  - [REST API](./docs/usage-instructions.md#rest-api-version)
+- [File Structure](./docs/file-structure.md)
+- [Evaluation & Results](./docs/evaluation-results.md)
+- [References & Acknowledgments](#references-and-acknowledgments)
+  - [Future possibilities](#future-possibilities)
+- Developer Docs
+  - [API Definitions](./docs/dev/api_docs.md)
+  - [Uninstall Ollama](./docs/dev/uninstall-ollama.md)
 
 ---
 
@@ -17,298 +37,73 @@
 
 ### Overview
 
-The OpenGeneva Sparkboard is an innovative ontology-driven AI system designed to enhance the depth and utility of peer review systems in hackathon environments. Rather than relying on simplistic ranking scales, our approach leverages structured knowledge representation to capture both reviewer characteristics and feedback dimensions, enabling comprehensive multi-perspective analysis of hackathon projects.
+This project is an innovative \*RDF/TTL ontology-driven\*\* AI system designed to enhance the depth and utility of peer review systems in hackathon environments. Rather than relying on simplistic ranking scales, our approach leverages structured knowledge representation to capture both reviewer characteristics and feedback dimensions, enabling comprehensive multi-perspective analysis of hackathon projects.
 
 ### State-of-the-Art & Problem Statement
 
 Traditional hackathon peer reviews suffer from several limitations:
 
-- Lack of structure in review processes
-- Poor expertise matching between reviewers and projects
-- Insufficient perspective coverage across different domains
-- Inconsistent evaluation criteria across reviewers
+- **Static review frameworks** that cannot adapt to new domains or evaluation criteria
+- **Poor expertise matching** between reviewers and projects
+- **Insufficient perspective coverage** across different stakeholder domains
+- **Inconsistent evaluation criteria** that vary between reviewers and events
+- **Lack of semantic understanding** of domain relationships and expertise levels
 
-### Key Features
+### Our Approach: Dynamic RDF Ontology Based Review System
 
-- **Ontological Knowledge Representation:** Structured classification of domains, expertise levels, and evaluation dimensions
-- **Reviewer Expertise Profiling:** Automatic classification of reviewers based on confidence scores and review content
-- **Domain Relevance Scoring:** Intelligent matching between reviewer expertise and project domains
-- **Artificial Review Generation:** AI-generated reviews to fill gaps in domain coverage
-- **Multi-dimensional Evaluation:** Comprehensive scoring across technical feasibility, innovation, impact, scalability, and ROI
-- **Hybrid Human-AI Pipeline:** Combines human expertise with AI augmentation for comprehensive analysis
+Our solution transforms static review systems into **adaptive, knowledge-driven platforms** that:
+
+- **Generate prompts dynamically** from RDF ontology definitions
+- **Adapt behavior in real-time** based on ontological knowledge updates
+- **Understand semantic relationships** between domains and evaluation dimensions
+- **Scale automatically** to new domains without code modifications
 
 ### Ontology & AI Methods Used
 
-- **Knowledge Graph Structure:** RDF/TTL-based ontology defining domains, subdomains, expertise levels, and evaluation dimensions
-- **Natural Language Processing:** LLM-based sentiment analysis and review classification
-- **Machine Learning:** Domain classification and relevance scoring using text similarity measures
-- **Multi-Provider LLM Integration:** Support for Claude, ChatGPT, Ollama, and Groq APIs
-- **Confidence-Based Filtering:** Review acceptance based on expertise level and domain relevance thresholds
+- **RDF/TTL Semantic Web:** Knowledge representation using W3C standards
+- **SPARQL Query Engine:** Dynamic knowledge extraction from triple store
+- **Natural Language Processing:** LLM-based sentiment analysis and classification
+- **Graph-Based Reasoning:** Domain relevance scoring using semantic relationships
+- **Multi-Provider LLM Integration:** Support for Claude, ChatGPT, Ollama, and Groq
+- **Confidence-Based Filtering:** Review acceptance based on expertise and relevance
 
----
+### Key Features
 
-## Installation & Setup
+#### **🧠 RDF Ontology-Driven Intelligence**
 
-### Prerequisites
+- **Dynamic Knowledge Representation:** RDF/TTL ontology with semantic relationships
+- **Runtime Ontology Management:** Add domains/dimensions without code changes
+- **Semantic Relationship Modeling:** Explicit domain-dimension associations
 
-- Python 3.13.3 or latest
-- Git
-- LLM Provider Access (at least one of the following):
-  - Ollama (local) - _recommended for development_
-  - Anthropic Claude
-  - OpenAI ChatGPT
-  - Groq
+#### **🔄 Dynamic AI Prompt Generation**
 
-### Setup Instructions
+- **Context-Aware Prompts:** Generated from ontological domain definitions
+- **Adaptive Review Criteria:** Evaluation dimensions loaded dynamically from ontology
+- **Semantic Personalization:** Prompts include relevant keywords and relationships
+- **Multi-Domain Coverage:** Automatic prompt generation for missing expertise areas
 
-**1. Clone the repository**
+#### **👥 Intelligent Reviewer Profiling**
 
-```bash
-git clone https://github.com/Pro19/kos-opengeneva-sparkboard-review-system
+- **Semantic Classification:** Domain assignment using ontological definitions
+- **Expertise Level Mapping:** Confidence-based expertise determination
+- **Relevance Scoring:** Semantic matching between reviewer expertise and projects
+- ~~**External Profile Integration:** LinkedIn, GitHub, Google Scholar analysis~~
 
-cd kos-opengeneva-sparkboard-review-system
-```
+#### **📊 Multi-Dimensional Evaluation Framework**
 
-**2. Create virtual environment**
+- **Dynamic Scoring Dimensions:** Loaded from RDF ontology definitions
+- **Weighted Domain Analysis:** Scoring based on domain-dimension relevance
+- **Comprehensive Impact Assessment:** Technical, clinical, business, and design perspectives
+- **Adaptive Scale Definitions:** Evaluation criteria defined semantically in ontology
 
-```bash
-python -m venv .venv        # linux
-```
+#### **🤖 Hybrid Human-AI Pipeline**
 
-**3. Install dependencies**
+- **Intelligent Review Augmentation:** AI fills gaps in domain coverage
+- **Quality-Based Filtering:** Confidence and relevance threshold management
+- **Multi-Perspective Synthesis:** Combines human expertise with AI-generated insights
+- **Contextual Recommendation Engine:** Actionable suggestions based on ontological analysis
 
-```bash
-pip install -r requirements.txt
-```
-
-**4. Configure LLM Provider**
-
-```bash
-# Install Ollama (if not already installed)
-./scripts/install-ollama.bash   # linux
-
-# Pull a model (e.g., DeepSeek R1)
-ollama pull deepseek-r1:1.5b
-```
-
-Edit `src/infrastructure/config.py` to configure your preferred LLM provider:
-
-**Example provider: Ollama (Local, Free)**
-
-Install Ollama using the provided script:
-
-```bash
-# linux only
-chmod +x scripts/install-ollama.bash
-./scripts/install-ollama.bash
-
-# pull a model
-ollama pull deepseek-r1:1.5b
-# or
-ollama pull llama3
-
-ollama serve  # usually runs on localhost:11434
-```
-
-Update config (default):
-
-```python
-LLM_CONFIG = {
-    "provider": "ollama",
-
-    "ollama": {
-        "base_url": "http://localhost:11434",
-        "model": "deepseek-r1:1.5b"
-    }
-}
-```
-
-**Test LLM configuration**
-
-```bash
-# python -m src.cli.llm_cli test <provider_name>
-
-python -m src.cli.llm_cli test ollama
-```
-
----
-
-## Ontology & Data Structure
-
-### Ontology Design
-
-Our ontology is structured around five core components:
-
-**1. Domains (`hr:Domain`)**
-
-- _Technical_: Programming, software engineering, hardware development
-- _Clinical_: Medical/healthcare expertise, patient care, diagnosis
-- _Administrative_: Healthcare administration, policy, management
-- _Business_: Market analysis, commercialization, entrepreneurship
-- _Design_: UI/UX design, visual design, interaction design
-- _User Experience_: User research, accessibility, behavior analysis
-
-**2. Expertise Levels (`hr:ExpertiseLevel`)**
-
-Based on confidence scores (0-100):
-
-- _Beginner (0-40)_: Basic understanding
-- _Skilled (41-70)_: Practical experience
-- _Talented (71-85)_: Deep understanding
-- _Seasoned (86-95)_: Extensive experience
-- _Expert (96-100)_: Top-level mastery
-
-**3. Impact Dimensions (`hr:ImpactDimension`)**
-
-- _Technical Feasibility_: Implementation difficulty with current technology
-- _Innovation_: Novelty and uniqueness of approach
-- _Impact_: Potential effect on target problem/domain
-- _Implementation Complexity_: Practical deployment difficulty
-- _Scalability_: Ability to scale to wider implementation
-- _Return on Investment_: Expected benefits vs. costs
-
-**4. Project Types (`hr:ProjectType`)**
-
-Software, Hardware, Data, Process, Service
-
-**5. Review Dimensions Mapping**
-
-Each domain has relevant dimensions for focused evaluation:
-
-- _Technical_: Technical Feasibility, Implementation Complexity, Scalability, Innovation
-- _Clinical_: Impact, Implementation Complexity, Technical Feasibility
-- _Business_: ROI, Scalability, Impact
-
-### Data Schema
-
-The system uses both file-based storage (for CLI) and SQLite database (for API):
-
-```sql
-Projects: project_id, name, description, work_done, status
-Reviews: review_id, project_id, reviewer_name, text_review, confidence_score
-ProcessingJobs: job_id, project_id, status, progress
-FeedbackReports: report_id, project_id, feedback_scores, final_review
-```
-
-## File Structure
-
-```
-kos-opengeneva-sparkboard-review-system/
-├── README.md                         # This comprehensive documentation
-├── requirements.txt                  # Python dependencies
-├── .gitignore                        # Git ignore rules
-│
-├── scripts/                          # Installation and utility scripts
-│   ├── install-ollama.bash           # Ollama installation script (Linux)
-│   └── run_api.py                    # API server startup script
-│
-├── src/                              # Main source code
-│   ├── api/                          # REST API implementation
-│   │   ├── __init__.py
-│   │   ├── app.py                    # FastAPI application
-│   │   ├── models.py                 # SQLAlchemy & Pydantic models
-│   │   ├── processing.py             # Background processing tasks
-│   │   └── scalar_fastapi.py         # API documentation integration
-│   │
-│   ├── cli/                          # Command-line interface
-│   │   ├── __init__.py
-│   │   ├── main.py                   # CLI entry point
-│   │   └── llm_cli.py                # LLM provider management
-│   │
-│   ├── core/                         # Core logic
-│   │   ├── __init__.py
-│   │   ├── ontology.py               # Ontology management
-│   │   ├── project.py                # Project data structures
-│   │   ├── reviewer.py               # Reviewer profiling
-│   │   ├── review.py                 # Review analysis
-│   │   └── feedback.py               # Feedback generation
-│   │
-│   └── infrastructure/               # Infrastructure & utilities
-│       ├── __init__.py
-│       ├── config.py                 # Configuration settings
-│       ├── database.py               # Database setup
-│       ├── llm_interface.py          # LLM provider interface
-│       ├── logging_utils.py          # Logging configuration
-│       └── utils.py                  # Utility functions
-│
-├── data/                             # Ontology and reference data
-│   ├── ontology.json                 # JSON ontology definition
-│   └── ontology.ttl                  # RDF/TTL ontology format
-│
-├── docs/                             # Documentation
-│   ├── api.md                        # REST API documentation
-│   └── uninstall-ollama.md           # Ollama uninstallation guide
-│
-├── projects/                         # Sample project data (CLI mode)
-│   └── [project_directories]/        # Individual project folders
-```
-
-- **Core Logic (`src/core/`):** Domain-specific business logic for ontology, reviews, and feedback
-- **API Layer (`src/api/`):** REST API with OpenAPI documentation
-- **CLI Interface (`src/cli/`):** Command-line tools for batch processing
-- **Infrastructure (`src/infrastructure/`):** Project wide features like logging, database, LLM integration
-- **Ontology Data (`data/`):** Structured knowledge representation in JSON and RDF formats
-- **Documentation (`docs/`):** Technical documentation and guides
-
----
-
-## Usage Instructions
-
-### CLI Version:
-
-```bash
-# process all projects in the projects/ directory
-python -m src.cli.main
-
-# process a specific project
-python -m src.cli.main --project <project_id>
-
-# create new ontology
-python -m src.cli.main --new-ontology
-
-# custom output directory
-python -m src.cli.main --output custom_output/
-```
-
-For CLI usage, organize projects as:
-
-```
-projects/
-├── project1/
-│   ├── description.md
-│   ├── review1.md
-│   └── review2.md
-└── project2/
-    ├── description.md
-    └── review1.md
-```
-
-### GUI Version:
-
-A simple GUI application is included to analyze the project and visualize the ontology + project reviews:
-
-```bash
-python gui.py
-```
-
-### REST API Version:
-
-```bash
-# start the API server
-python scripts/run_api.py
-
-# or directly with uvicorn
-uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --reload
-```
-
-API Documentation will be available at:
-
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
-- Scalar: http://localhost:8000/scalar (prefer this)
-- OpenAPI JSON: http://localhost:8000/openapi.json
-
-## References & Acknowledgments
+## References and Acknowledgments
 
 ### Academic References
 
@@ -316,6 +111,17 @@ API Documentation will be available at:
 
 Special thanks to:
 
-- Professor and TA of D400006 for guidance on knowledge organization systems (Thomas and Tibaut)
-- Maintainer of OpenGeneva Sparkboard (Matt)
-- Our team members for collaborative development
+- Professor and TA of D400006 for guidance
+  - Thomas Maillart - Thomas.Maillart@unige.ch
+  - Thibaut Chataing - Thibaut.Chataing@unige.ch
+- Maintainer of OpenGeneva Sparkboard hackathon platform
+  - Matthew Hubert - matt@opengeneva.org
+- Our team members
+
+### Future Possibilities
+
+- Import External Ontologies: Load domain-specific ontologies from research
+- Reasoning: Add RDFS/OWL reasoning for inferred relationships
+- Linked Data: Connect to external knowledge graphs
+- Multi-Language Support: Internationalize domain/dimension descriptions
+- Advanced Querying: Complex SPARQL queries for deep analysis
