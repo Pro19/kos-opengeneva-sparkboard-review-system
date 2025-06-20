@@ -81,7 +81,7 @@ docker run hackathon-review-system --validate-ontology
 
 ```bash
 # start the desktop ui
-python -m src.gui.main
+python -m src.api.desktop
 ```
 
 ## REST API Version
