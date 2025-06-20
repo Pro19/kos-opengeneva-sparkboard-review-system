@@ -35,6 +35,9 @@ def main():
     print(f"  - Scalar: http://localhost:{port}/scalar")
     print(f"  - OpenAPI JSON: http://localhost:{port}/openapi.json")
     print()
+    print("Web UI will be available at:")
+    print(f"  - Web UI: http://localhost:{port}/ui")
+    print()
     
     # Run the server using import string for reload support
     uvicorn.run(

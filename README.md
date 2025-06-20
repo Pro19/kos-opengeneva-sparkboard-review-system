@@ -16,6 +16,7 @@
 
 - [Project Description](#project-description)
     - [Key Features](#key-features)
+    - [Screenshots](./docs/screenshots.md)
 - [Installation & Setup](./docs/installation-setup.md)
 - [Ontology & Data Structure](./docs/ontology-data-structure.md)
 - [Usage Instructions](./docs/usage-instructions.md)
