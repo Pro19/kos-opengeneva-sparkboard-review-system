@@ -2,7 +2,7 @@
 
 ```
 kos-opengeneva-sparkboard-review-system/
-├── README.md                         # This comprehensive documentation
+├── README.md                         # Comprehensive project documentation
 ├── requirements.txt                  # Python dependencies
 ├── .gitignore                        # Git ignore rules
 │
@@ -12,11 +12,12 @@ kos-opengeneva-sparkboard-review-system/
 │   └── example_api.py                # API usage examples
 │
 ├── src/                              # Main source code
-│   ├── api/                          # REST API implementation
+│   ├── api/                          # API & Interface implementations
 │   │   ├── app.py                    # FastAPI application with ontology APIs
 │   │   ├── models.py                 # SQLAlchemy & Pydantic models
 │   │   ├── processing.py             # Background processing with RDF ontology
-│   │   └── scalar_fastapi.py         # API documentation integration
+│   │   ├── scalar_fastapi.py         # API documentation integration
+│   │   └── desktop.py                # PyQt6 Desktop GUI application
 │   │
 │   ├── cli/                          # Command-line interface
 │   │   ├── main.py                   # Enhanced CLI with ontology features
@@ -44,7 +45,16 @@ kos-opengeneva-sparkboard-review-system/
 │
 ├── docs/                             # Documentation
 │   ├── api.md                        # REST API documentation
-│   └── uninstall-ollama.md           # Ollama uninstallation guide
+│   ├── file-structure.md             # This file structure documentation
+│   ├── ontology-data-structure.md    # Ontology design and data schema
+│   ├── installation-setup.md         # Installation and setup instructions
+│   ├── usage-instructions.md         # Usage instructions for all interfaces
+│   ├── evaluation-results.md         # Evaluation methodology and results
+│   ├── screenshots.md                # Screenshots of different interfaces
+│   ├── dev/                          # Developer documentation
+│   │   ├── api_docs.md               # API development documentation
+│   │   └── uninstall-ollama.md       # Ollama uninstallation guide
+│   └── (additional documentation files)
 │
 ├── projects/                         # Sample project data (CLI mode)
 │   ├── ai-health-assistant/          # AI health assistant project
@@ -54,10 +64,13 @@ kos-opengeneva-sparkboard-review-system/
 │       ├── description.md
 │       └── review*.md
 │
-└── output/                           # Generated reports and visualizations
-    ├── feedback_reports/
-    ├── visualizations/
-    └── ontology_backups/
+├── output/                           # Generated reports and visualizations
+│   ├── feedback_reports/
+│   ├── visualizations/
+│   └── ontology_backups/
+│
+└── logs/                             # Application logs
+    └── hackathon_review.log
 ```
 
 ## Key files/modules:

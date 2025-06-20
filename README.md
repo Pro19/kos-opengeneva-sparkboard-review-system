@@ -112,7 +112,12 @@ Our solution transforms static review systems into **adaptive, knowledge-driven 
 
 ## References and Acknowledgments
 
-### Academic References
+### References
+
+- Course contents shared during the class
+- Documentations of various toolings like `rdflib` and `fastapi`
+- W3C RDF Working Group. (2014). RDF 1.1 concepts and abstract syntax. W3C Recommendation. https://www.w3.org/TR/rdf11-concepts/
+- W3C SPARQL Working Group. (2013). SPARQL 1.1 query language. W3C Recommendation. https://www.w3.org/TR/sparql11-query/
 
 ### Acknowledgments
 
