@@ -34,6 +34,7 @@ python -m src.cli.main --backup-ontology
 ```
 
 For CLI usage, organize projects as:
+
 ```
 projects/
 ├── project1/
@@ -48,10 +49,7 @@ projects/
 ## GUI Version:
 
 ```bash
-# start the graphical user interface
-python gui.py
-
-# or using the module path
+# start the GUI application
 python -m src.gui.main
 ```
 
