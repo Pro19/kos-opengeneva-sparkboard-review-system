@@ -5,6 +5,7 @@
 **Course:** D400006 – Knowledge Organization Systems, Université de Genève
 
 **Team Members:**
+
 - Eisha Tir Raazia - Eisha.Raazia@etu.unige.ch
 - Mahidhar Reddy Vaka - Mahidhar.Vaka@etu.unige.ch
 - Oussama Rattazi - Oussama.Rattazi@etu.unige.ch
@@ -15,20 +16,20 @@
 ## Documentation
 
 - [Project Description](#project-description)
-    - [Key Features](#key-features)
-    - [Screenshots](./docs/screenshots.md)
+  - [Key Features](#key-features)
+  - [Screenshots](./docs/screenshots.md)
 - [Installation & Setup](./docs/installation-setup.md)
 - [Ontology & Data Structure](./docs/ontology-data-structure.md)
 - [Usage Instructions](./docs/usage-instructions.md)
-    - [CLI](./docs/usage-instructions.md#cli-version)
-    - [REST API](./docs/usage-instructions.md#rest-api-version)
+  - [CLI](./docs/usage-instructions.md#cli-version)
+  - [REST API](./docs/usage-instructions.md#rest-api-version)
 - [File Structure](./docs/file-structure.md)
 - [Evaluation & Results](./docs/evaluation-results.md)
 - [References & Acknowledgments](#references-and-acknowledgments)
-    - [Future possibilities](#future-possibilities)
+  - [Future possibilities](#future-possibilities)
 - Developer Docs
-    - [API Definitions](./docs/dev/api_docs.md)
-    - [Uninstall Ollama](./docs/dev/uninstall-ollama.md)
+  - [API Definitions](./docs/dev/api_docs.md)
+  - [Uninstall Ollama](./docs/dev/uninstall-ollama.md)
 
 ---
 
@@ -38,9 +39,11 @@
 
 This project is an innovative **RDF/TTL ontology-driven** AI system designed to enhance the depth and utility of peer review systems in hackathon environments. Rather than relying on simplistic ranking scales, our approach leverages structured knowledge representation to capture both reviewer characteristics and feedback dimensions, enabling comprehensive multi-perspective analysis of hackathon projects.
 
+
 ### State-of-the-Art & Problem Statement
 
 Traditional hackathon peer reviews suffer from several limitations:
+
 - **Static review frameworks** that cannot adapt to new domains or evaluation criteria
 - **Poor expertise matching** between reviewers and projects
 - **Insufficient perspective coverage** across different stakeholder domains
@@ -50,6 +53,7 @@ Traditional hackathon peer reviews suffer from several limitations:
 ### Our Approach: Dynamic RDF Ontology Based Review System
 
 Our solution transforms static review systems into **adaptive, knowledge-driven platforms** that:
+
 - **Generate prompts dynamically** from RDF ontology definitions
 - **Adapt behavior in real-time** based on ontological knowledge updates
 - **Understand semantic relationships** between domains and evaluation dimensions
@@ -67,29 +71,34 @@ Our solution transforms static review systems into **adaptive, knowledge-driven 
 ### Key Features
 
 #### **🧠 RDF Ontology-Driven Intelligence**
+
 - **Dynamic Knowledge Representation:** RDF/TTL ontology with semantic relationships
 - **Runtime Ontology Management:** Add domains/dimensions without code changes
 - **Semantic Relationship Modeling:** Explicit domain-dimension associations
 
 #### **🔄 Dynamic AI Prompt Generation**
+
 - **Context-Aware Prompts:** Generated from ontological domain definitions
 - **Adaptive Review Criteria:** Evaluation dimensions loaded dynamically from ontology
 - **Semantic Personalization:** Prompts include relevant keywords and relationships
 - **Multi-Domain Coverage:** Automatic prompt generation for missing expertise areas
 
 #### **👥 Intelligent Reviewer Profiling**
+
 - **Semantic Classification:** Domain assignment using ontological definitions
 - **Expertise Level Mapping:** Confidence-based expertise determination
 - **Relevance Scoring:** Semantic matching between reviewer expertise and projects
 - ~~**External Profile Integration:** LinkedIn, GitHub, Google Scholar analysis~~
 
 #### **📊 Multi-Dimensional Evaluation Framework**
+
 - **Dynamic Scoring Dimensions:** Loaded from RDF ontology definitions
 - **Weighted Domain Analysis:** Scoring based on domain-dimension relevance
 - **Comprehensive Impact Assessment:** Technical, clinical, business, and design perspectives
 - **Adaptive Scale Definitions:** Evaluation criteria defined semantically in ontology
 
 #### **🤖 Hybrid Human-AI Pipeline**
+
 - **Intelligent Review Augmentation:** AI fills gaps in domain coverage
 - **Quality-Based Filtering:** Confidence and relevance threshold management
 - **Multi-Perspective Synthesis:** Combines human expertise with AI-generated insights
@@ -104,13 +113,14 @@ Our solution transforms static review systems into **adaptive, knowledge-driven 
 Special thanks to:
 
 - Professor and TA of D400006 for guidance
-    - Thomas Maillart - Thomas.Maillart@unige.ch
-    - Thibaut Chataing - Thibaut.Chataing@unige.ch
+  - Thomas Maillart - Thomas.Maillart@unige.ch
+  - Thibaut Chataing - Thibaut.Chataing@unige.ch
 - Maintainer of OpenGeneva Sparkboard hackathon platform
-    - Matthew Hubert - matt@opengeneva.org
+  - Matthew Hubert - matt@opengeneva.org
 - Our team members
 
 ### Future Possibilities
+
 - Import External Ontologies: Load domain-specific ontologies from research
 - Reasoning: Add RDFS/OWL reasoning for inferred relationships
 - Linked Data: Connect to external knowledge graphs
