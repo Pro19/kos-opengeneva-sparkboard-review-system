@@ -45,6 +45,8 @@ python scripts/run_api.py
 uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --reload
 ```
 
+Open web ui in the browser at: http://localhost:8000/ui
+
 API Documentation will be available at:
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
