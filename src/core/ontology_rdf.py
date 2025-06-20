@@ -1,7 +1,3 @@
-"""
-Ontology management using RDF/TTL for hackathon review system.
-"""
-
 import os
 from typing import Dict, List, Any, Optional, Tuple
 from rdflib import Graph, Namespace, URIRef, Literal, RDF, RDFS, OWL
@@ -15,10 +11,6 @@ HR = Namespace("http://example.org/hackathon-review/")
 XSD = Namespace("http://www.w3.org/2001/XMLSchema#")
 
 class RDFOntology:
-    """
-    Class for managing the RDF/TTL ontology for the hackathon review system.
-    """
-    
     def __init__(self, ttl_path: Optional[str] = None):
         """
         Initialize the RDF ontology.

@@ -1,7 +1,3 @@
-"""
-Updated REST API implementation with RDF ontology management capabilities.
-"""
-
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Query, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
@@ -24,7 +20,7 @@ from src.api.models import (
 )
 from src.api.processing import process_project_reviews
 from src.api.scalar_fastapi import get_scalar_api_reference
-from src.core.ontology import Ontology  # Updated ontology with RDF backend
+from src.core.ontology import Ontology
 from src.infrastructure.logging_utils import logger
 
 # Global ontology instance
@@ -419,7 +415,7 @@ async def update_project(project_id: str, project_update: ProjectUpdate, db: Ses
     
     return ProjectResponse.from_orm(project)
 
-# Review Management APIs (existing)
+# Review Management APIs
 
 @app.post("/api/v1/projects/{project_id}/reviews", response_model=ReviewResponse, status_code=201)
 async def submit_review(project_id: str, review: ReviewCreate, db: Session = Depends(get_db)):
@@ -529,7 +525,7 @@ async def get_review(project_id: str, review_id: str, db: Session = Depends(get_
     
     return ReviewResponse.from_orm(review)
 
-# Processing APIs (existing, but now uses RDF ontology)
+# Processing APIs
 
 @app.post("/api/v1/projects/{project_id}/process", status_code=202)
 async def start_processing(
@@ -622,7 +618,7 @@ async def get_processing_status(project_id: str, db: Session = Depends(get_db)):
     else:
         return ProcessingStatusResponse.from_orm(job)
 
-# Results APIs (existing, but enhanced with ontology information)
+# Results APIs
 
 @app.get("/api/v1/projects/{project_id}/feedback", response_model=FeedbackResponse)
 async def get_feedback_report(project_id: str, db: Session = Depends(get_db)):

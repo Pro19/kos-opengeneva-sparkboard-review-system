@@ -9,10 +9,6 @@ from src.core.ontology_rdf import RDFOntology
 from src.core.dynamic_prompts import DynamicPromptGenerator
 
 class Ontology:
-    """
-    Updated ontology class that uses RDF/TTL backend with dynamic prompt generation.
-    """
-    
     def __init__(self, load_existing: bool = True):
         """
         Initialize the ontology with RDF backend.
