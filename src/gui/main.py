@@ -15,9 +15,9 @@ from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QFont
 
 # Import the existing modules
-from project import load_all_projects
-from config import PATHS, SETTINGS, LLM_CONFIG
-from logging_utils import logger
+from src.core.project import load_all_projects
+from src.infrastructure.config import PATHS, SETTINGS, LLM_CONFIG
+from src.infrastructure.logging_utils import logger
 
 
 class MaterialColors:
@@ -600,10 +600,10 @@ class MainWindow(QMainWindow):
             # Real analysis process
             def run_analysis():
                 try:
-                    from ontology import Ontology
-                    from reviewer import ReviewerProfile
-                    from review import ReviewAnalyzer
-                    from feedback import FeedbackGenerator
+                    from src.core.ontology import Ontology
+                    from src.core.reviewer import ReviewerProfile
+                    from src.core.review import ReviewAnalyzer
+                    from src.core.feedback import FeedbackGenerator
                     import os
 
                     # Initialize components

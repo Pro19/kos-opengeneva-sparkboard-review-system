@@ -1,5 +1,5 @@
 """
-Background processing for project review analysis
+Updated background processing for project review analysis using RDF ontology.
 """
 
 import uuid
@@ -8,17 +8,21 @@ from typing import Dict, Any, List
 
 from src.infrastructure.database import get_db_context
 from src.api.models import Project, Review, ProcessingJob, FeedbackReport
-from src.core.ontology import Ontology
+from src.core.ontology import Ontology  # Updated ontology with RDF backend
 from src.core.reviewer import ReviewerProfile
 from src.core.review import ReviewAnalyzer
 from src.core.feedback import FeedbackGenerator
-from src.infrastructure.llm_interface import analyze_review_sentiment, generate_artificial_review, generate_llm_response
+from src.infrastructure.llm_interface import (
+    analyze_review_sentiment, 
+    generate_artificial_review, 
+    generate_final_review_from_ontology
+)
 from src.infrastructure.logging_utils import logger
-from src.infrastructure.config import LLM_PROMPTS
 
-# Processing steps
+# Processing steps (updated for RDF ontology)
 PROCESSING_STEPS = [
     "loading_project",
+    "initializing_ontology",
     "analyzing_reviews", 
     "classifying_reviewers",
     "generating_artificial_reviews",
@@ -50,10 +54,11 @@ def update_job_progress(job_id: str, step: str, completed: int, errors: List[str
 
 def process_project_reviews(project_id: str, job_id: str, options: Dict[str, Any]):
     """
-    Process reviews for a project using the ontology-driven analysis system.
+    Process reviews for a project using the RDF ontology-driven analysis system.
     This runs as a background task.
     """
     errors = []
+    ontology = None
     
     try:
         # Step 1: Load project and update status
@@ -77,14 +82,30 @@ def process_project_reviews(project_id: str, job_id: str, options: Dict[str, Any
             project.processing_status = "processing"
             db.commit()
         
-        # Step 2: Initialize analysis components
-        ontology = Ontology(load_existing=True)
+        # Step 2: Initialize RDF ontology and analysis components
+        update_job_progress(job_id, "initializing_ontology", 1)
+        
+        try:
+            # Load ontology with RDF backend
+            ontology = Ontology(load_existing=True)
+            logger.info(f"Loaded RDF ontology with {len(ontology.get_domains())} domains")
+            
+            # Log ontology stats for debugging
+            ontology_stats = ontology.rdf_ontology._get_ontology_stats() if hasattr(ontology.rdf_ontology, '_get_ontology_stats') else {}
+            logger.info(f"Ontology stats: {ontology_stats}")
+            
+        except Exception as e:
+            logger.error(f"Failed to load RDF ontology: {str(e)}")
+            errors.append(f"Ontology loading error: {str(e)}")
+            raise
+        
+        # Initialize analysis components
         reviewer_profiler = ReviewerProfile(ontology)
         review_analyzer = ReviewAnalyzer(ontology, reviewer_profiler)
         feedback_generator = FeedbackGenerator(ontology)
         
         # Step 3: Analyze and classify reviews
-        update_job_progress(job_id, "analyzing_reviews", 1)
+        update_job_progress(job_id, "analyzing_reviews", 2)
         
         # Process reviews one by one to avoid session issues
         with get_db_context() as db:
@@ -106,7 +127,7 @@ def process_project_reviews(project_id: str, job_id: str, options: Dict[str, Any
                         "is_artificial": review.is_artificial
                     }
                     
-                    # Classify reviewer
+                    # Classify reviewer using dynamic prompts from ontology
                     reviewer_profile = reviewer_profiler.classify_reviewer(
                         review_data["reviewer_name"],
                         review_data["text_review"],
@@ -114,7 +135,7 @@ def process_project_reviews(project_id: str, job_id: str, options: Dict[str, Any
                         review_data["links"]
                     )
                     
-                    # Check domain relevance
+                    # Check domain relevance using dynamic calculation
                     project_description = f"{project_info['name']}\n{project_info['description']}\n{project_info['work_done']}"
                     relevance_score = reviewer_profiler.check_domain_relevance(
                         project_description,
@@ -131,8 +152,8 @@ def process_project_reviews(project_id: str, job_id: str, options: Dict[str, Any
                         project_description
                     )
                     
-                    # Analyze sentiment
-                    sentiment_scores = analyze_review_sentiment(review_data["text_review"])
+                    # Analyze sentiment using dynamic prompts from ontology
+                    sentiment_scores = analyze_review_sentiment(review_data["text_review"], ontology)
                     
                     # Update review in database
                     review.domain = reviewer_profile.get("domain")
@@ -149,9 +170,9 @@ def process_project_reviews(project_id: str, job_id: str, options: Dict[str, Any
             # Commit all review updates
             db.commit()
         
-        # Step 4: Generate artificial reviews if needed
+        # Step 4: Generate artificial reviews if needed using dynamic prompts
         if options.get("generate_artificial_reviews", True):
-            update_job_progress(job_id, "generating_artificial_reviews", 2)
+            update_job_progress(job_id, "generating_artificial_reviews", 3)
             
             # Get accepted reviews and their domains
             with get_db_context() as db:
@@ -162,30 +183,41 @@ def process_project_reviews(project_id: str, job_id: str, options: Dict[str, Any
                 
                 covered_domains = set(r.domain for r in accepted_reviews if r.domain)
                 
-                # Check for missing core domains
+                # Get all available domains from ontology dynamically
+                available_domains = ontology.get_domains()
+                logger.info(f"Available domains from ontology: {available_domains}")
+                logger.info(f"Covered domains: {covered_domains}")
+                
+                # Check for missing domains
                 missing_domains = []
                 project_description = f"{project_info['name']}\n{project_info['description']}\n{project_info['work_done']}"
                 
-                for domain in ["technical", "clinical", "administrative", "business", "design", "user_experience"]:
+                for domain in available_domains:
                     if domain not in covered_domains:
                         relevance = reviewer_profiler.check_domain_relevance(
                             project_description,
                             domain
                         )
+                        logger.info(f"Domain {domain} relevance: {relevance}")
                         if relevance >= 0.2:
                             missing_domains.append(domain)
                 
-                # Generate artificial reviews
+                logger.info(f"Generating artificial reviews for missing domains: {missing_domains}")
+                
+                # Generate artificial reviews using dynamic prompts from ontology
                 for domain in missing_domains:
                     try:
                         artificial_review_data = generate_artificial_review(
                             project_description,
                             domain,
-                            ontology
+                            ontology  # Pass ontology for dynamic prompt generation
                         )
                         
-                        # Analyze sentiment
-                        sentiment_scores = analyze_review_sentiment(artificial_review_data.get("text_review", ""))
+                        # Analyze sentiment using dynamic prompts
+                        sentiment_scores = analyze_review_sentiment(
+                            artificial_review_data.get("text_review", ""), 
+                            ontology
+                        )
                         
                         # Create review in database
                         review_id = f"rev_{uuid.uuid4().hex[:8]}"
@@ -211,12 +243,14 @@ def process_project_reviews(project_id: str, job_id: str, options: Dict[str, Any
                         db.add(artificial_review)
                         db.commit()
                         
+                        logger.info(f"Generated artificial review for domain: {domain}")
+                        
                     except Exception as e:
                         logger.error(f"Error generating artificial review for domain {domain}: {str(e)}")
                         errors.append(f"Artificial review {domain}: {str(e)}")
         
-        # Step 5: Calculate feedback scores
-        update_job_progress(job_id, "calculating_scores", 3)
+        # Step 5: Calculate feedback scores using dynamic dimensions from ontology
+        update_job_progress(job_id, "calculating_scores", 4)
         
         # Get all accepted reviews with their data
         accepted_reviews_data = []
@@ -238,21 +272,21 @@ def process_project_reviews(project_id: str, job_id: str, options: Dict[str, Any
                     "reviewer_name": review.reviewer_name
                 })
         
-        # Use updated function names
-        feedback_scores = _calculate_feedback_scores_from_data(accepted_reviews_data, ontology)
+        # Calculate feedback scores using dynamic dimensions from ontology
+        feedback_scores = _calculate_feedback_scores_from_data_dynamic(accepted_reviews_data, ontology)
         overall_score = sum(feedback_scores.values()) / len(feedback_scores) if feedback_scores else 0.0
         
-        # Step 6: Generate final feedback
-        update_job_progress(job_id, "generating_feedback", 4)
+        # Step 6: Generate final feedback using dynamic prompts from ontology
+        update_job_progress(job_id, "generating_feedback", 5)
         
-        # Generate final review text
-        final_review = _generate_final_review_from_data(project_info, accepted_reviews_data, feedback_scores)
+        # Generate final review text using dynamic prompts
+        final_review = generate_final_review_from_ontology(project_info, accepted_reviews_data, feedback_scores, ontology)
         
-        # Generate domain insights
-        domain_insights = _generate_domain_insights_from_data(accepted_reviews_data)
+        # Generate domain insights using ontology information
+        domain_insights = _generate_domain_insights_from_data_dynamic(accepted_reviews_data, ontology)
         
-        # Generate recommendations
-        recommendations = _generate_recommendations(feedback_scores, domain_insights)
+        # Generate recommendations using dynamic analysis
+        recommendations = _generate_recommendations_dynamic(feedback_scores, domain_insights, ontology)
         
         # Save feedback report and update project status
         with get_db_context() as db:
@@ -279,7 +313,12 @@ def process_project_reviews(project_id: str, job_id: str, options: Dict[str, Any
                     "accepted_reviews": len(accepted_reviews_data),
                     "human_reviews": human_reviews,
                     "artificial_reviews": artificial_reviews,
-                    "processing_time_seconds": processing_time
+                    "processing_time_seconds": processing_time,
+                    "ontology_stats": {
+                        "domains_used": len(set(r["domain"] for r in accepted_reviews_data if r["domain"])),
+                        "total_domains_available": len(ontology.get_domains()),
+                        "dimensions_evaluated": len(feedback_scores)
+                    }
                 }
             )
             
@@ -295,6 +334,8 @@ def process_project_reviews(project_id: str, job_id: str, options: Dict[str, Any
         # Mark job as completed
         update_job_progress(job_id, "completed", len(PROCESSING_STEPS), errors)
         
+        logger.info(f"Successfully processed project {project_id} using RDF ontology")
+        
     except Exception as e:
         logger.error(f"Fatal error processing project {project_id}: {str(e)}")
         errors.append(f"Fatal error: {str(e)}")
@@ -307,9 +348,15 @@ def process_project_reviews(project_id: str, job_id: str, options: Dict[str, Any
                 project.processing_status = "failed"
                 db.commit()
 
-def _calculate_feedback_scores_from_data(reviews_data: List[Dict[str, Any]], ontology: Ontology) -> Dict[str, float]:
-    """Calculate aggregate feedback scores from review data"""
+def _calculate_feedback_scores_from_data_dynamic(reviews_data: List[Dict[str, Any]], ontology: Ontology) -> Dict[str, float]:
+    """Calculate aggregate feedback scores from review data using dynamic dimensions from ontology"""
     from collections import defaultdict
+    
+    # Get available dimensions dynamically from ontology
+    available_dimensions = ontology.rdf_ontology.get_impact_dimensions()
+    dimension_ids = [dim["id"] for dim in available_dimensions]
+    
+    logger.info(f"Calculating scores for dynamic dimensions: {dimension_ids}")
     
     dimension_scores = defaultdict(list)
     dimension_weights = defaultdict(list)
@@ -332,13 +379,13 @@ def _calculate_feedback_scores_from_data(reviews_data: List[Dict[str, Any]], ont
             if review.get("is_artificial", False):
                 weight *= 0.7
             
-            # Get relevant dimensions for this domain
+            # Get relevant dimensions for this domain from ontology
             domain = review.get("domain", "")
             relevant_dimensions = ontology.get_relevant_dimensions_for_domain(domain) if domain else []
             
             # Add scores
             for dimension, score in review["sentiment_scores"].items():
-                if dimension != "overall_sentiment":
+                if dimension != "overall_sentiment" and dimension in dimension_ids:
                     dimension_weight = weight
                     if dimension in relevant_dimensions:
                         dimension_weight *= 1.5
@@ -348,63 +395,25 @@ def _calculate_feedback_scores_from_data(reviews_data: List[Dict[str, Any]], ont
     
     # Calculate weighted averages
     feedback_scores = {}
-    for dimension, scores in dimension_scores.items():
-        weights = dimension_weights[dimension]
+    for dimension_id in dimension_ids:
+        scores = dimension_scores.get(dimension_id, [])
+        weights = dimension_weights.get(dimension_id, [])
         if scores and weights:
             weighted_sum = sum(score * weight for score, weight in zip(scores, weights))
             total_weight = sum(weights)
-            feedback_scores[dimension] = round(weighted_sum / total_weight, 1)
+            feedback_scores[dimension_id] = round(weighted_sum / total_weight, 1)
         else:
-            feedback_scores[dimension] = 3.0  # Default
+            feedback_scores[dimension_id] = 3.0  # Default
     
+    logger.info(f"Calculated dynamic feedback scores: {feedback_scores}")
     return feedback_scores
 
-def _generate_final_review_from_data(project_info: Dict[str, Any], reviews_data: List[Dict[str, Any]], scores: Dict[str, float]) -> str:
-    """Generate final review text based on extracted review data"""
-    from src.infrastructure.llm_interface import generate_llm_response
-    from src.infrastructure.config import LLM_PROMPTS
-    
-    # Group reviews by domain
-    reviews_by_domain = {}
-    for review in reviews_data:
-        domain = review.get("domain", "unknown")
-        if domain not in reviews_by_domain:
-            reviews_by_domain[domain] = []
-        reviews_by_domain[domain].append(review)
-    
-    # Format dimension scores
-    dimension_scores_text = ""
-    for dimension, score in scores.items():
-        if dimension != "overall_sentiment":
-            dimension_name = dimension.replace("_", " ").title()
-            dimension_scores_text += f"- {dimension_name}: {score}\n"
-    
-    # Format domain insights
-    domain_insights_text = ""
-    for domain, domain_reviews in reviews_by_domain.items():
-        domain_name = domain.capitalize()
-        domain_insights_text += f"\n{domain_name} perspective:\n"
-        
-        for review in domain_reviews:
-            review_type = "AI-generated" if review.get("is_artificial", False) else "Human"
-            expertise = review.get("expertise_level", "").capitalize() if review.get("expertise_level") else ""
-            review_snippet = review.get("text_review", "")[:100].replace('\n', ' ').strip()
-            domain_insights_text += f"- {review_type} {expertise} Reviewer: {review_snippet}...\n"
-    
-    # Get prompt template and generate
-    prompt_template = LLM_PROMPTS.get("generate_final_review")
-    prompt = prompt_template.format(
-        project_name=project_info.get("name", ""),
-        project_description=f"{project_info.get('description', '')}\n\nWork done: {project_info.get('work_done', '')}",
-        dimension_scores=dimension_scores_text,
-        domain_insights=domain_insights_text
-    )
-    
-    return generate_llm_response(prompt)
-
-def _generate_domain_insights_from_data(reviews_data: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """Generate insights grouped by domain from review data"""
+def _generate_domain_insights_from_data_dynamic(reviews_data: List[Dict[str, Any]], ontology: Ontology) -> Dict[str, Any]:
+    """Generate insights grouped by domain from review data using ontology information"""
     insights = {}
+    
+    # Get domain information from ontology
+    domains_info = {domain["id"]: domain for domain in ontology.rdf_ontology.get_domains()}
     
     # Group reviews by domain
     reviews_by_domain = {}
@@ -416,6 +425,11 @@ def _generate_domain_insights_from_data(reviews_data: List[Dict[str, Any]]) -> D
     
     # Generate insights for each domain
     for domain, domain_reviews in reviews_by_domain.items():
+        # Get domain information from ontology
+        domain_info = domains_info.get(domain, {})
+        domain_name = domain_info.get("name", domain.capitalize())
+        domain_desc = domain_info.get("description", "")
+        
         # Extract key themes from reviews
         positive_points = []
         concerns = []
@@ -425,39 +439,63 @@ def _generate_domain_insights_from_data(reviews_data: List[Dict[str, Any]]) -> D
             # High scoring dimensions
             for dim, score in sentiment_scores.items():
                 if score >= 4.0 and dim != "overall_sentiment":
-                    positive_points.append(dim.replace("_", " ").title())
+                    # Get dimension name from ontology
+                    dim_info = ontology.rdf_ontology.get_dimension_by_id(dim)
+                    dim_name = dim_info["name"] if dim_info else dim.replace("_", " ").title()
+                    positive_points.append(dim_name)
                 elif score <= 2.5 and dim != "overall_sentiment":
-                    concerns.append(dim.replace("_", " ").title())
+                    # Get dimension name from ontology
+                    dim_info = ontology.rdf_ontology.get_dimension_by_id(dim)
+                    dim_name = dim_info["name"] if dim_info else dim.replace("_", " ").title()
+                    concerns.append(dim_name)
         
         insights[domain] = {
-            "summary": f"Perspective from {len(domain_reviews)} {domain} reviewer(s)",
+            "domain_name": domain_name,
+            "domain_description": domain_desc,
+            "summary": f"Perspective from {len(domain_reviews)} {domain_name} reviewer(s)",
             "key_points": list(set(positive_points))[:3],
-            "concerns": list(set(concerns))[:3]
+            "concerns": list(set(concerns))[:3],
+            "review_count": len(domain_reviews),
+            "artificial_count": len([r for r in domain_reviews if r.get("is_artificial", False)])
         }
     
     return insights
 
-def _generate_recommendations(scores: Dict[str, float], insights: Dict[str, Any]) -> List[str]:
-    """Generate actionable recommendations based on scores and insights"""
+def _generate_recommendations_dynamic(scores: Dict[str, float], insights: Dict[str, Any], ontology: Ontology) -> List[str]:
+    """Generate actionable recommendations based on scores and insights using ontology information"""
     recommendations = []
     
+    # Get dimension information from ontology for better recommendations
+    dimensions_info = {dim["id"]: dim for dim in ontology.rdf_ontology.get_impact_dimensions()}
+    
     # Low scoring dimensions
-    for dimension, score in scores.items():
+    for dimension_id, score in scores.items():
         if score < 3.0:
-            dim_name = dimension.replace("_", " ").title()
-            if dimension == "technical_feasibility":
+            dim_info = dimensions_info.get(dimension_id, {})
+            dim_name = dim_info.get("name", dimension_id.replace("_", " ").title())
+            dim_desc = dim_info.get("description", "")
+            
+            # Generate specific recommendations based on dimension
+            if dimension_id == "technical_feasibility":
                 recommendations.append(f"Address technical challenges to improve {dim_name}")
-            elif dimension == "implementation_complexity":
+            elif dimension_id == "implementation_complexity":
                 recommendations.append("Simplify implementation approach for easier adoption")
-            elif dimension == "scalability":
+            elif dimension_id == "scalability":
                 recommendations.append("Develop a clear scaling strategy")
-            elif dimension == "return_on_investment":
+            elif dimension_id == "return_on_investment":
                 recommendations.append("Clarify value proposition and ROI metrics")
+            elif dimension_id == "innovation":
+                recommendations.append("Enhance innovative aspects or differentiation")
+            elif dimension_id == "impact":
+                recommendations.append("Strengthen the potential impact and benefits")
+            else:
+                recommendations.append(f"Focus on improving {dim_name}: {dim_desc}")
     
     # Domain-specific recommendations
     for domain, insight in insights.items():
         if insight.get("concerns"):
-            recommendations.append(f"Address {domain} concerns: {', '.join(insight['concerns'][:2])}")
+            domain_name = insight.get("domain_name", domain.capitalize())
+            recommendations.append(f"Address {domain_name} concerns: {', '.join(insight['concerns'][:2])}")
     
     # General recommendations based on patterns
     if scores.get("innovation", 0) > 4.0 and scores.get("technical_feasibility", 0) < 3.0:
@@ -465,5 +503,9 @@ def _generate_recommendations(scores: Dict[str, float], insights: Dict[str, Any]
     
     if scores.get("impact", 0) > 4.0:
         recommendations.append("Leverage high impact potential with clear implementation roadmap")
+    
+    # Ensure we have at least one recommendation
+    if not recommendations:
+        recommendations.append("Continue development with focus on identified strengths")
     
     return recommendations[:5]  # Return top 5 recommendations

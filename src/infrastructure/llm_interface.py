@@ -1,7 +1,3 @@
-"""
-Interface for interacting with language models (Claude, ChatGPT, Ollama)
-"""
-
 import time
 import requests
 import json
@@ -77,7 +73,7 @@ def _call_claude_api(prompt: str) -> str:
         "https://api.anthropic.com/v1/messages",
         headers=headers,
         json=payload,
-        timeout=30  # Add timeout
+        timeout=30
     )
     
     if response.status_code == 200:
@@ -110,7 +106,7 @@ def _call_chatgpt_api(prompt: str) -> str:
         "https://api.openai.com/v1/chat/completions",
         headers=headers,
         json=payload,
-        timeout=30  # Add timeout
+        timeout=30
     )
     
     if response.status_code == 200:
@@ -140,7 +136,7 @@ def _call_ollama_api(prompt: str) -> str:
     response = requests.post(
         f"{base_url}/api/generate",
         json=payload,
-        timeout=180  # Longer timeout for local models which might be slower
+        timeout=180
     )
     
     if response.status_code == 200:
@@ -175,7 +171,6 @@ def _call_groq_api(prompt: str) -> str:
         "max_tokens": max_tokens
     }
 
-    # Initial backoff in seconds (will increase exponentially)
     backoff = 1
     max_backoff = 60
     max_attempts = 5
@@ -191,115 +186,111 @@ def _call_groq_api(prompt: str) -> str:
         if response.status_code == 200:
             return response.json()["choices"][0]["message"]["content"]
         elif response.status_code == 429:
-            # Rate limit hit - extract wait time if available
             wait_time = backoff
             try:
                 error_data = response.json().get("error", {})
                 error_msg = error_data.get("message", "")
-                # Try to extract wait time from message
                 import re
                 wait_match = re.search(r'try again in (\d+\.?\d*)s', error_msg)
                 if wait_match:
-                    wait_time = float(wait_match.group(1)) + 0.5  # Add a small buffer
+                    wait_time = float(wait_match.group(1)) + 0.5
             except:
                 pass
                 
             logger.warning(f"Rate limit hit. Waiting {wait_time}s before retry (attempt {attempt+1}/{max_attempts})")
             time.sleep(wait_time)
-            
-            # Increase backoff for next attempt
             backoff = min(backoff * 2, max_backoff)
         else:
             logger.error(f"Groq API error: {response.status_code} - {response.text}")
             raise Exception(f"Groq API error: {response.status_code} - {response.text}")
     
-    # If we exhausted all attempts
     logger.error(f"Failed after {max_attempts} attempts due to rate limiting")
     raise Exception(f"Groq API rate limits exceeded after {max_attempts} attempts with backoff")
+
+# Updated functions that use dynamic prompts from ontology
 
 def generate_artificial_review(project_description: str, domain: str, ontology: Any) -> Dict[str, Any]:
     """
     Generate an artificial review for a project from a specific domain perspective.
+    Now uses dynamic prompts from the ontology.
     
     Args:
         project_description: Description of the project
         domain: Domain to generate review from
-        ontology: Ontology object containing domain definitions
+        ontology: Ontology object with prompt generator
         
     Returns:
         Dictionary containing the artificial review
     """
-    domain_data = ontology.ontology.get("domains", {}).get(domain.lower(), {})
-    domain_name = domain_data.get("name", domain.capitalize())
-    domain_desc = domain_data.get("description", "")
-    
-    prompt = f"""
-    You are an expert reviewer with expertise in {domain_name}: {domain_desc}
-    
-    You are reviewing a hackathon project with the following description:
-    
-    {project_description}
-    
-    Please provide a detailed review of this project from your expertise perspective of {domain_name}.
-    Consider aspects like technical feasibility, innovation, impact, implementation complexity, and scalability.
-    
-    Your review should be thorough but concise (around 300-400 words).
-    
-    Also, provide a confidence score between 0-100 that reflects how confident you are in your assessment.
-    As an expert in {domain_name}, your confidence score should be high (85-95).
-    """
-    
-    # For dimensions relevant to this domain
-    dimension_prompts = []
-    for dimension_id in ontology.get_relevant_dimensions_for_domain(domain):
-        dimension_data = ontology.ontology.get("impact_dimensions", {}).get(dimension_id, {})
-        dimension_name = dimension_data.get("name", dimension_id.replace("_", " ").capitalize())
-        dimension_desc = dimension_data.get("description", "")
-        dimension_prompts.append(f"- {dimension_name}: {dimension_desc}")
-    
-    if dimension_prompts:
-        prompt += "\n\nPlease focus on these dimensions that are particularly relevant to your domain:\n"
-        prompt += "\n".join(dimension_prompts)
+    # Use dynamic prompt generator
+    prompt = ontology.prompt_generator.generate_artificial_review_prompt(
+        project_description, domain
+    )
     
     response = generate_llm_response(prompt)
     cleaned_response = remove_thinking_tags(response)
     
-    # Extract a confidence score (default to 90 for artificial reviews)
-    confidence_score = 90
+    # Parse response for review and confidence
+    confidence_score = 90  # Default
+    review_text = cleaned_response
     
-    # In a real implementation, parse the confidence score from the response
+    # Try to extract confidence score from response
+    import re
+    confidence_match = re.search(r'CONFIDENCE:\s*(\d+)', cleaned_response)
+    if confidence_match:
+        confidence_score = int(confidence_match.group(1))
+        # Remove confidence line from review text
+        review_text = re.sub(r'CONFIDENCE:\s*\d+', '', cleaned_response).strip()
+    
+    # Remove "REVIEW:" prefix if present
+    review_text = re.sub(r'^REVIEW:\s*', '', review_text).strip()
     
     artificial_review = {
-        "reviewer_name": f"AI {domain_name} Expert",
+        "reviewer_name": f"AI {domain.capitalize()} Expert",
         "domain": domain,
         "is_artificial": True,
-        "text_review": cleaned_response,
+        "text_review": review_text,
         "confidence_score": confidence_score
     }
     
     return artificial_review
 
-def analyze_review_sentiment(review_text: str) -> Dict[str, float]:
-    prompt = f"""
-    Analyze the following project review for sentiment and scoring on key dimensions.
-    
-    {review_text}
-    
-    Rate on a scale of 1-5 (where 1 is very negative and 5 is very positive) for each dimension.
-    
-    You MUST respond with ONLY a valid JSON object in this exact format:
-    {{
-      "technical_feasibility": 3.5,
-      "innovation": 4.0,
-      "impact": 3.0,
-      "implementation_complexity": 2.5,
-      "scalability": 4.0,
-      "return_on_investment": 3.5,
-      "overall_sentiment": 3.5
-    }}
-    
-    Replace the example values with your actual ratings. Use only numbers between 1.0 and 5.0.
+def analyze_review_sentiment(review_text: str, ontology: Any = None) -> Dict[str, float]:
     """
+    Analyze review sentiment using dynamic prompts from ontology.
+    
+    Args:
+        review_text: Text of the review to analyze
+        ontology: Ontology object with prompt generator (optional for backward compatibility)
+        
+    Returns:
+        Dictionary of sentiment scores by dimension
+    """
+    if ontology and hasattr(ontology, 'prompt_generator'):
+        # Use dynamic prompt from ontology
+        prompt = ontology.prompt_generator.generate_sentiment_analysis_prompt(review_text)
+    else:
+        # Fallback to static prompt for backward compatibility
+        prompt = f"""
+        Analyze the following project review for sentiment and scoring on key dimensions.
+        
+        {review_text}
+        
+        Rate on a scale of 1-5 (where 1 is very negative and 5 is very positive) for each dimension.
+        
+        You MUST respond with ONLY a valid JSON object in this exact format:
+        {{
+          "technical_feasibility": 3.5,
+          "innovation": 4.0,
+          "impact": 3.0,
+          "implementation_complexity": 2.5,
+          "scalability": 4.0,
+          "return_on_investment": 3.5,
+          "overall_sentiment": 3.5
+        }}
+        
+        Replace the example values with your actual ratings. Use only numbers between 1.0 and 5.0.
+        """
     
     response = generate_llm_response(prompt)
     
@@ -311,21 +302,16 @@ def analyze_review_sentiment(review_text: str) -> Dict[str, float]:
             json_str = json_match.group(0)
             sentiment_data = json.loads(json_str)
             
-            # Validate the data has the expected keys
-            expected_keys = ["technical_feasibility", "innovation", "impact", 
-                            "implementation_complexity", "scalability", 
-                            "return_on_investment", "overall_sentiment"]
-            
-            if all(key in sentiment_data for key in expected_keys):
+            # Validate basic structure
+            if isinstance(sentiment_data, dict) and len(sentiment_data) > 0:
                 return sentiment_data
         
-        # If regex extraction failed or validation failed, try parsing the whole response
+        # If regex extraction failed, try parsing the whole response
         sentiment_data = json.loads(response)
         return sentiment_data
         
     except json.JSONDecodeError:
-        # If all parsing fails, return randomized default values for testing
-        # (in production, you'd want to log this error and handle it properly)
+        # If all parsing fails, return default values
         import random
         logger.error("Failed to parse sentiment analysis response as JSON. Using varied default values.")
         return {
@@ -341,44 +327,52 @@ def analyze_review_sentiment(review_text: str) -> Dict[str, float]:
 def classify_reviewer_domain(reviewer_name: str, review_text: str, ontology: Any) -> str:
     """
     Classify a reviewer into a domain based on their review text.
+    Now uses dynamic prompts from the ontology.
     
     Args:
         reviewer_name: Name of the reviewer
         review_text: Text of the review
-        ontology: Ontology object containing domain definitions
+        ontology: Ontology object with prompt generator
         
     Returns:
         Domain classification
     """
-    domains = ontology.get_domains()
-    domain_descriptions = []
-    
-    for domain in domains:
-        domain_data = ontology.ontology.get("domains", {}).get(domain, {})
-        domain_name = domain_data.get("name", domain.capitalize())
-        domain_desc = domain_data.get("description", "")
-        domain_descriptions.append(f"- {domain_name}: {domain_desc}")
-    
-    prompt = f"""
-    Based on the following review text, classify the reviewer into one of these domains:
-    
-    {' '.join(domain_descriptions)}
-    
-    Review from {reviewer_name}:
-    {review_text}
-    
-    Return just one domain name that best fits this reviewer's perspective.
-    """
+    # Use dynamic prompt generator
+    prompt = ontology.prompt_generator.generate_reviewer_classification_prompt(
+        reviewer_name, review_text
+    )
     
     response = generate_llm_response(prompt).strip()
     
-    # Extract domain name (remove any explanation)
-    for domain in domains:
-        domain_data = ontology.ontology.get("domains", {}).get(domain, {})
-        domain_name = domain_data.get("name", domain.capitalize())
-        
-        if domain_name.lower() in response.lower() or domain.lower() in response.lower():
+    # Validate response against available domains
+    available_domains = ontology.get_domains()
+    response_lower = response.lower()
+    
+    for domain in available_domains:
+        if domain.lower() in response_lower:
             return domain
     
     # Default to first domain if no match
-    return domains[0] if domains else "technical"
+    return available_domains[0] if available_domains else "technical"
+
+def generate_final_review_from_ontology(project_info: Dict[str, Any], 
+                                      reviews_data: List[Dict[str, Any]], 
+                                      feedback_scores: Dict[str, float],
+                                      ontology: Any) -> str:
+    """
+    Generate final review text using dynamic prompts from ontology.
+    
+    Args:
+        project_info: Project information dictionary
+        reviews_data: List of review data
+        feedback_scores: Calculated feedback scores
+        ontology: Ontology object with prompt generator
+        
+    Returns:
+        Generated final review text
+    """
+    prompt = ontology.prompt_generator.generate_final_review_synthesis_prompt(
+        project_info, reviews_data, feedback_scores
+    )
+    
+    return generate_llm_response(prompt)
