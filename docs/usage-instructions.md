@@ -110,10 +110,7 @@ projects/
 **Note:** The GUI version requires a local installation with PyQt6. Docker containers do not support GUI applications without additional X11 forwarding configuration.
 
 ```bash
-# start the graphical user interface (local installation only)
-python gui.py
-
-# or using the module path
+# start the GUI application
 python -m src.gui.main
 ```
 
