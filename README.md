@@ -16,20 +16,26 @@
 ## Documentation
 
 - [Project Description](#project-description)
-  - [Key Features](#key-features)
-  - [Screenshots](./docs/screenshots.md)
-- [Installation & Setup](./docs/installation-setup.md)
+    - [Key Features](#key-features)
+    - [Screenshots](./docs/screenshots.md)
 - [Ontology & Data Structure](./docs/ontology-data-structure.md)
+- [Installation & Setup](./docs/installation-setup.md)
+    - [Local](./docs/installation-setup.md#local-setup-instructions)
+    - [Docker / Podman](./docs/installation-setup.md#docker--podman-setup-instructions)
 - [Usage Instructions](./docs/usage-instructions.md)
-  - [CLI](./docs/usage-instructions.md#cli-version)
-  - [REST API](./docs/usage-instructions.md#rest-api-version)
+    - [CLI](./docs/usage-instructions.md#cli-version) &nbsp;&nbsp;(_Local & containerized_)
+    - [REST API](./docs/usage-instructions.md#rest-api-version) &nbsp;&nbsp;(_Local & containerized_)
+    - [Desktop](./docs/usage-instructions.md#desktop-version) &nbsp;&nbsp;(_Local only_)
+    - [Browser](./docs/usage-instructions.md#browser-version) &nbsp;&nbsp;(_Local & containerized_)
 - [File Structure](./docs/file-structure.md)
 - [Evaluation & Results](./docs/evaluation-results.md)
+    - [Methodology](./docs/evaluation-results.md#methodology)
+    - [Key Findings](./docs/evaluation-results.md#key-findings)
 - [References & Acknowledgments](#references-and-acknowledgments)
-  - [Future possibilities](#future-possibilities)
-- Developer Docs
-  - [API Definitions](./docs/dev/api_docs.md)
-  - [Uninstall Ollama](./docs/dev/uninstall-ollama.md)
+    - [Future possibilities](#future-possibilities)
+- _Developer Docs_
+    - [API Definitions](./docs/dev/api_docs.md)
+    - [Uninstall Ollama](./docs/dev/uninstall-ollama.md)
 
 ---
 

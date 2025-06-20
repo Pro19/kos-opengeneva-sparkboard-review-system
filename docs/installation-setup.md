@@ -1,6 +1,8 @@
 # Installation & Setup
 
-## Prerequisites
+## Local Setup Instructions
+
+### Prerequisites
 
 - Python 3.13.3 or latest
 - Git
@@ -10,14 +12,13 @@
     - OpenAI ChatGPT
     - Groq
 
-## Setup Instructions
-
 **1. Clone the repository**
 ```bash
 git clone https://github.com/Pro19/kos-opengeneva-sparkboard-review-system
 
 cd kos-opengeneva-sparkboard-review-system
 ```
+
 **2. Create virtual environment**
 ```bash
 python -m venv .venv
@@ -74,4 +75,20 @@ LLM_CONFIG = {
 # python -m src.cli.llm_cli test <provider_name>
 
 python -m src.cli.llm_cli test ollama
+```
+
+
+## Docker / Podman Setup Instructions
+
+### Prequisites
+
+- Docker / Podman
+- Docker compose / Podman compose
+
+### Building image
+
+```bash
+docker build -t hackathon-review-system:latest .
+# or
+podman build -t hackathon-review-system:latest .
 ```

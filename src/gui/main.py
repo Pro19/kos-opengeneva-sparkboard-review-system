@@ -1,7 +1,3 @@
-"""
-PyQt6-based GUI for the Ontology-Driven Hackathon Review System.
-"""
-
 import sys
 import threading
 from datetime import datetime

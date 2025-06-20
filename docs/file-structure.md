@@ -60,6 +60,7 @@ kos-opengeneva-sparkboard-review-system/
     └── ontology_backups/
 ```
 
+## Key files/modules:
 - **Core Logic (`src/core/`):** Main logic for ontology, reviews, and feedback
 - **API Layer (`src/api/`):** REST API with OpenAPI documentation
 - **CLI Interface (`src/cli/`):** Command-line tools with ontology analysis features

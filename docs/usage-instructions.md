@@ -1,73 +1,19 @@
 # Usage Instructions
 
-The Ontology-Driven Hackathon Review System provides multiple interfaces and deployment options:
+Interface Options:
 
-## Deployment Options:
-
-1. **Local Installation** - Direct Python installation for development and testing
-2. **Docker Container** - Containerized deployment for consistency and portability
-
-## Interface Options:
-
-1. **CLI Version** - Command-line interface for batch processing and automation
-2. **GUI Version** - Graphical user interface for interactive analysis (PyQt6-based)
-3. **REST API Version** - Web-based API with browser interface for remote access
-
-Choose the deployment method and interface that best fits your workflow and requirements.
+1. **CLI Version** - Command-line interface for automation purposes
+2. **REST API Version** - REST API server for remote automation purposes
+3. **Desktop Version** - Qt based interactive user interface
+4. **Browser Version** - An interactive browser based user interface
 
 ---
 
-## Docker Version:
+## CLI Version
 
-### Building the Docker Image
+### Local
 
-```bash
-# build the Docker image
-docker build -t hackathon-review-system .
-```
-
-### CLI Usage with Docker
-
-```bash
-# process all projects in the projects/ directory
-docker run -v $(pwd)/projects:/app/projects -v $(pwd)/output:/app/output hackathon-review-system
-
-# process a specific project
-docker run -v $(pwd)/projects:/app/projects -v $(pwd)/output:/app/output hackathon-review-system --project ai-health-assistant
-
-# create new ontology
-docker run -v $(pwd)/projects:/app/projects -v $(pwd)/output:/app/output hackathon-review-system --new-ontology
-
-# custom output directory with volume mapping
-docker run -v $(pwd)/projects:/app/projects -v $(pwd)/custom_output:/app/output hackathon-review-system --output /app/output
-
-# analyze ontology structure
-docker run hackathon-review-system --analyze-ontology
-
-# validate ontology consistency
-docker run hackathon-review-system --validate-ontology
-```
-
-### API Server with Docker
-
-```bash
-# start the API server in a container
-docker run -p 8000:8000 -v $(pwd)/projects:/app/projects -v $(pwd)/output:/app/output hackathon-review-system python scripts/run_api.py
-
-# or with docker-compose (if available)
-docker-compose up
-```
-
-### Volume Mapping Notes
-
-- `-v $(pwd)/projects:/app/projects` - Maps your local projects directory to the container
-- `-v $(pwd)/output:/app/output` - Maps your local output directory to preserve results
-- `-p 8000:8000` - Maps port 8000 for API access
-- Results and logs will be saved to your local directories through volume mapping
-
----
-
-## CLI Version:
+> _Make sure the virtual environment is active!_
 
 ```bash
 # process all projects in the projects/ directory
@@ -105,48 +51,44 @@ projects/
     └── review1.md
 ```
 
-## GUI Version:
+### Containerized
+
+```bash
+# process all projects in the projects/ directory
+docker run -v $(pwd)/projects:/app/projects -v $(pwd)/output:/app/output hackathon-review-system
+
+# process a specific project
+docker run -v $(pwd)/projects:/app/projects -v $(pwd)/output:/app/output hackathon-review-system --project ai-health-assistant
+
+# create new ontology
+docker run -v $(pwd)/projects:/app/projects -v $(pwd)/output:/app/output hackathon-review-system --new-ontology
+
+# custom output directory with volume mapping
+docker run -v $(pwd)/projects:/app/projects -v $(pwd)/custom_output:/app/output hackathon-review-system --output /app/output
+
+# analyze ontology structure
+docker run hackathon-review-system --analyze-ontology
+
+# validate ontology consistency
+docker run hackathon-review-system --validate-ontology
+```
+
+## Desktop Version
+
+> _Make sure the virtual environment is active!_
 
 **Note:** The GUI version requires a local installation with PyQt6. Docker containers do not support GUI applications without additional X11 forwarding configuration.
 
 ```bash
-# start the GUI application
+# start the desktop ui
 python -m src.gui.main
 ```
 
-The GUI provides an intuitive interface with the following tabs:
+## REST API Version
 
-### Projects Tab
+### Local
 
-- Browse and select project directories
-- View project information and review counts
-- Select multiple projects for batch analysis
-- Refresh project list as needed
-
-### Configuration Tab
-
-- Configure LLM provider settings (Ollama, Claude, ChatGPT, Groq)
-- Set API keys and model parameters
-- Adjust general settings like ontology updates and chart generation
-- Save configuration for the current session
-
-### Analysis Tab
-
-- Monitor analysis progress in real-time
-- View detailed logs of the analysis process
-- Start/stop analysis operations
-- Clear log output when needed
-
-### Results Tab
-
-- Browse completed analysis results
-- View feedback scores and final reviews
-- Export results for further processing
-- Visualize project evaluation data
-
-The GUI automatically organizes projects in the same structure as the CLI version and provides visual feedback throughout the analysis process.
-
-## REST API Version:
+> _Make sure the virtual environment is active!_
 
 ```bash
 # start the API server
@@ -156,8 +98,6 @@ python scripts/run_api.py
 uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Open web ui in the browser at: http://localhost:8000/ui
-
 API Documentation will be available at:
 
 - Swagger UI: http://localhost:8000/docs
@@ -165,7 +105,7 @@ API Documentation will be available at:
 - Scalar: http://localhost:8000/scalar (prefer this)
 - OpenAPI JSON: http://localhost:8000/openapi.json
 
-### Key API Endpoints
+**Key API Endpoints**
 
 ```bash
 # Ontology Management
@@ -184,6 +124,24 @@ POST /api/v1/projects/{id}/process      # Start review analysis
 GET /api/v1/projects/{id}/feedback      # Get comprehensive feedback report
 GET /api/v1/projects/{id}/status        # Get processing status
 ```
+
+### Containerized
+
+```bash
+# start the API server in a container
+docker run -p 8000:8000 hackathon-review-system python scripts/run_api.py
+# or
+podman run -p 8000:8000 hackathon-review-system python scripts/run_api.py
+
+# or with docker-compose (if available)
+docker-compose up
+```
+
+## Browser Version
+
+After running the API server _(see instructions above)_, open web ui in the browser at: http://localhost:8000/ui
+
+---
 
 ## Ontology Management Examples
 
